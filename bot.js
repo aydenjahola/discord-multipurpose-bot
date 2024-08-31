@@ -13,7 +13,7 @@ const client = new Client({
 });
 
 const VERIFIED_ROLE_NAME = process.env.VERIFIED_ROLE_NAME; // Role name to assign after verification
-const EMAIL_DOMAIN = process.env.EMAIL_DOMAIN; // Domain to verify against
+const EMAIL_DOMAINS = process.env.EMAIL_DOMAINS.split(","); // Domains to verify against, converted to an array
 const GUILD_ID = process.env.GUILD_ID; // Guild ID to restrict the bot
 const VERIFICATION_CHANNEL_NAME = process.env.VERIFICATION_CHANNEL_NAME; // Channel name to restrict the bot
 
@@ -56,14 +56,14 @@ client.on("messageCreate", async (message) => {
 
       if (!email) {
         return verificationChannel.send(
-          "Please provide your email address. Usage: `!verify your_email@mail.dcu.ie`"
+          "Please provide your email address. Usage: `!verify your_email@example.com`"
         );
       }
 
       const emailDomain = email.split("@")[1];
-      if (emailDomain !== EMAIL_DOMAIN) {
+      if (!EMAIL_DOMAINS.includes(emailDomain)) {
         return verificationChannel.send(
-          "You must use a valid DCU student email address."
+          "You must use a valid DCU email address."
         );
       }
 

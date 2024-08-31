@@ -1,6 +1,6 @@
-# Esports Verification Bot
+# Discord Verification Bot
 
-Welcome to the **Esports Verification Bot**! This bot is designed to handle user verification for Discord servers, specifically for esports communities. It verifies users through their student email addresses and manages roles based on their verification status.
+Welcome to the **Discord Verification Bot**! This bot is designed to handle user verification for Discord servers. It verifies users through their student email addresses and manages roles based on their verification status.
 
 ## Features
 
@@ -39,14 +39,27 @@ npm install
 Create a `.env` file in the root directory and add the following:
 
 ```env
-BOT_TOKEN=your_discord_bot_token
-MONGODB_URI=your_mongodb_connection_string
-EMAIL_USER=your_email@gmail.com
-EMAIL_PASS=your_email_password
-VERIFIED_ROLE_NAME=YourVerifiedRoleName
-EMAIL_DOMAIN=mail.dcu.ie
-GUILD_ID=your_discord_guild_id
+# Bot token
+BOT_TOKEN=YOUR_BOT_TOKEN
+
+# Nodemailer
+EMAIL_NAME="Example"
+EMAIL_USER=example@example.com
+EMAIL_PASS=YOUR_EMAIL_PASS
+
+# Allowed domains for email verification
+EMAIL_DOMAINS=example@example.com // or it can be a list, example: "example.com,example2.com"
+
+# Discord
+GUILD_ID=YOUR_GUILD_ID
+VERIFICATION_CHANNEL_NAME=YOUR_VERIFICATION_CHANNEL_NAME
+VERIFIED_ROLE_NAME=YOUR_VERIFIED_ROLE_NAME
+
+# Database
+MONGODB_URI=YOUR_MONGODB_URI
 ```
+
+this can also be seen in in the [.env.example](./.env.example)
 
 4. **Run the Bot**
 
