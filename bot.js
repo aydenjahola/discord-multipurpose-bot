@@ -15,7 +15,7 @@ const client = new Client({
 const VERIFIED_ROLE_NAME = process.env.VERIFIED_ROLE_NAME; // Role name to assign after verification
 const EMAIL_DOMAIN = process.env.EMAIL_DOMAIN; // Domain to verify against
 const GUILD_ID = process.env.GUILD_ID; // Guild ID to restrict the bot
-const VERIFICATION_CHANNEL_NAME = "verification"; // Channel name to restrict the bot
+const VERIFICATION_CHANNEL_NAME = process.env.VERIFICATION_CHANNEL_NAME; // Channel name to restrict the bot
 
 // Connect to MongoDB
 mongoose
