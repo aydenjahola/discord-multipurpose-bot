@@ -56,7 +56,7 @@ client.on("messageCreate", async (message) => {
 
       if (!email) {
         return verificationChannel.send(
-          "Please provide your email address. Usage: `!verify your_email@example.com`"
+          "Please provide your email address. Usage: `!verify your_email@mail.dcu.ie`"
         );
       }
 
