@@ -96,13 +96,13 @@ client.on("messageCreate", async (message) => {
       const emailHtml = `
         <html>
           <body style="font-family: Arial, sans-serif; color: #333;">
-            <h2 style="color: #1e90ff;">Your Verification Code</h2>
+            <h2 style="color: #1e90ff;">Your Esports Verification Code</h2>
             <p>Hi there,</p>
-            <p>Thank you for requesting verification. Your verification code is:</p>
+            <p>Thank you for requesting verification. Your Esports verification code is:</p>
             <h3 style="background-color: #f4f4f4; padding: 10px; border: 1px solid #ddd; border-radius: 5px; text-align: center; color: #1e90ff;">
               ${verificationCode}
             </h3>
-            <p>This code is valid for 10 minutes. Please enter it in the Discord channel using the command <code>!code your_code</code>.</p>
+            <p>This code is valid for 10 minutes. Please enter it in the verification Discord channel using the command <code>!code your_code</code>.</p>
             <p>If you did not request this code, please ignore this email.</p>
             <p>Best regards,<br>Esports Committee</p>
           </body>
@@ -111,7 +111,7 @@ client.on("messageCreate", async (message) => {
 
       try {
         await transporter.sendMail({
-          from: process.env.EMAIL_USER,
+          from: `"${process.env.EMAIL_NAME}" <${process.env.EMAIL_USER}>`,
           to: email,
           subject: "Esports Verification Code",
           html: emailHtml, // Use HTML content
