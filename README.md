@@ -24,8 +24,8 @@ Before you begin, ensure you have:
 1. **Clone the Repository**
 
 ```sh
-   git clone git@github.com:aydenjahola/esports-verification-bot.git
-   cd esports-verification-bot
+git clone git@github.com:aydenjahola/esports-verification-bot.git
+cd esports-verification-bot
 ```
 
 2. **Install Dependencies**
@@ -69,5 +69,5 @@ node bot.js
 
 ### Usage
 
-- **!verify your_email@mail.dcu.ie**: Sends a verification code to the provided email.
+- **!verify your_email@example.com**: Sends a verification code to the provided email.
 - **!code your_code**: Validates the provided verification code.
