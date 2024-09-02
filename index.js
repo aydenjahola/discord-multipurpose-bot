@@ -1,8 +1,14 @@
 require("dotenv").config();
+const {
+  Client,
+  GatewayIntentBits,
+  Collection,
+  REST,
+  Routes,
+} = require("discord.js");
+const mongoose = require("mongoose");
 const fs = require("fs");
 const path = require("path");
-const { Client, GatewayIntentBits, Collection } = require("discord.js");
-const mongoose = require("mongoose");
 
 const client = new Client({
   intents: [
@@ -12,21 +18,20 @@ const client = new Client({
   ],
 });
 
+const GUIlD_ID = process.env.GUILD_ID;
+
 client.commands = new Collection();
 
-// Load command files dynamically
-const commandsPath = path.join(__dirname, "commands");
 const commandFiles = fs
-  .readdirSync(commandsPath)
+  .readdirSync(path.join(__dirname, "commands"))
   .filter((file) => file.endsWith(".js"));
 
 for (const file of commandFiles) {
-  const filePath = path.join(commandsPath, file);
-  const command = require(filePath);
+  const command = require(`./commands/${file}`);
   client.commands.set(command.data.name, command);
 }
 
-client.once("ready", () => {
+client.once("ready", async () => {
   console.log(`\n==============================`);
   console.log(`🤖 Logged in as ${client.user.tag}`);
   console.log(`==============================`);
@@ -36,15 +41,25 @@ client.once("ready", () => {
   });
   console.log(`\n==============================\n`);
 
-  // Set the bot's activity here
-  client.user.setActivity({ type: "WATCHING", name: "Degenerate Gamers" });
+  const commands = client.commands.map((cmd) => cmd.data.toJSON());
 
-  // Database connection (MongoDB)
-  mongoose
-    .connect(process.env.MONGODB_URI)
-    .then(() => console.log("✅ Connected to MongoDB"))
-    .catch((err) => console.error("❌ Failed to connect to MongoDB", err));
+  const rest = new REST({ version: "10" }).setToken(process.env.BOT_TOKEN);
+
+  try {
+    await rest.put(Routes.applicationGuildCommands(client.user.id, GUIlD_ID), {
+      body: commands,
+    });
+    console.log("Successfully registered all application commands.");
+  } catch (err) {
+    console.error("Error registering application commands:", err);
+  }
 });
+
+// MongoDB connection
+mongoose
+  .connect(process.env.MONGODB_URI)
+  .then(() => console.log("✅ Connected to MongoDB"))
+  .catch((err) => console.error("❌ Failed to connect to MongoDB", err));
 
 client.on("interactionCreate", async (interaction) => {
   if (!interaction.isCommand()) return;
@@ -55,13 +70,17 @@ client.on("interactionCreate", async (interaction) => {
 
   try {
     await command.execute(interaction, client);
-  } catch (error) {
-    console.error(error);
+  } catch (err) {
+    console.error(err);
     await interaction.reply({
       content: "There was an error while executing this command!",
       ephemeral: true,
     });
   }
+});
+
+client.on("Error", (err) => {
+  console.error("Client error:", err);
 });
 
 client.login(process.env.BOT_TOKEN);
