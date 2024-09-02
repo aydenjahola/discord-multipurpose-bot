@@ -93,7 +93,7 @@ module.exports = {
       }
 
       return interaction.reply({
-        content: `Congratulations ${interaction.user.username}, you have been verified!`,
+        content: `Congratulations <@${interaction.user.id}>, you have been verified!`,
         ephemeral: true,
       });
     } catch (err) {
