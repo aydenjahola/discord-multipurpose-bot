@@ -18,7 +18,7 @@ module.exports = {
     if (!code) {
       return interaction.reply({
         content:
-          "Please provide the verification code sent to your DCU email address.",
+          "Please provide the verification code sent to your email address.",
         ephemeral: true,
       });
     }
@@ -41,7 +41,7 @@ module.exports = {
       if (!guild) {
         console.error("Guild not found.");
         return interaction.reply({
-          content: "Guild not found.",
+          content: "The guild could not be found.",
           ephemeral: true,
         });
       }
@@ -51,7 +51,7 @@ module.exports = {
       if (!member) {
         console.error("Member not found in the guild.");
         return interaction.reply({
-          content: "Member not found in the guild.",
+          content: "You are not a member of the guild.",
           ephemeral: true,
         });
       }
@@ -63,7 +63,7 @@ module.exports = {
       if (!role) {
         console.error(`Role "${process.env.VERIFIED_ROLE_NAME}" not found.`);
         return interaction.reply({
-          content: `Role "${process.env.VERIFIED_ROLE_NAME}" not found.`,
+          content: `The role "${process.env.VERIFIED_ROLE_NAME}" could not be found.`,
           ephemeral: true,
         });
       }
@@ -77,16 +77,16 @@ module.exports = {
 
       await member.roles.add(role);
 
-      interaction.reply({
+      await VerificationCode.deleteOne({ userId: interaction.user.id, code });
+
+      // the verification code is no longer needed, but it will automatically be deleted after 10 minutes no need to manually delete it
+      return interaction.reply({
         content: `Congratulations ${interaction.user.username}, you have been verified!`,
         ephemeral: true,
       });
-
-      // the verification code is no longer needed, but it will automatically be deleted after 10 minutes
-      await VerificationCode.deleteOne({ userId: interaction.user.id, code });
     } catch (err) {
       console.error("Error processing verification code:", err);
-      interaction.reply({
+      return interaction.reply({
         content:
           "There was an error processing your verification. Please try again later.",
         ephemeral: true,
