@@ -69,5 +69,5 @@ node bot.js
 
 ### Usage
 
-- **!verify your_email@example.com**: Sends a verification code to the provided email.
-- **!code your_code**: Validates the provided verification code.
+- **/verify your_email@example.com**: Sends a verification code to the provided email.
+- **/code your_code**: Validates the provided verification code.
