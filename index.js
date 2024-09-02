@@ -37,7 +37,7 @@ client.once("ready", () => {
   console.log(`\n==============================\n`);
 
   // Set the bot's activity here
-  client.user.setActivity("Degenerate Gamers", { type: "WATCHING" });
+  client.user.setActivity({ type: "WATCHING", name: "Degenerate Gamers" });
 
   // Database connection (MongoDB)
   mongoose
