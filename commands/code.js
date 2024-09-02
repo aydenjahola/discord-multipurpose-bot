@@ -76,10 +76,22 @@ module.exports = {
       }
 
       await member.roles.add(role);
-
       await VerificationCode.deleteOne({ userId: interaction.user.id, code });
 
-      // the verification code is no longer needed, but it will automatically be deleted after 10 minutes no need to manually delete it
+      // Get the admin log channel
+      const adminLogChannel = client.channels.cache.get(
+        process.env.ADMIN_LOG_CHANNEL_ID
+      );
+
+      if (adminLogChannel) {
+        // Send the log message
+        await adminLogChannel.send({
+          content: `🎉 **Verification Success**\nUser: <@${interaction.user.id}> (${interaction.user.tag})\nRole: ${role.name}`,
+        });
+      } else {
+        console.error("Admin log channel not found.");
+      }
+
       return interaction.reply({
         content: `Congratulations ${interaction.user.username}, you have been verified!`,
         ephemeral: true,
