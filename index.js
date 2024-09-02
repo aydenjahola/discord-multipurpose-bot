@@ -43,6 +43,12 @@ client.once("ready", async () => {
 
   const commands = client.commands.map((cmd) => cmd.data.toJSON());
 
+  // Set bot status and activity
+  client.user.setPresence({
+    activities: [{ name: "Degenerate Gamers!", type: 3 }],
+    status: "online",
+  });
+
   const rest = new REST({ version: "10" }).setToken(process.env.BOT_TOKEN);
 
   try {
