@@ -22,6 +22,15 @@ module.exports = {
     ),
 
   async execute(interaction, client) {
+    // Ensure command is only used in the specified verification channel
+    const verificationChannelName = process.env.VERIFICATION_CHANNEL_NAME;
+    if (interaction.channel.name !== verificationChannelName) {
+      return interaction.reply({
+        content: `This command can only be used in the #${verificationChannelName} channel.`,
+        ephemeral: true,
+      });
+    }
+
     const email = interaction.options.getString("email");
     const emailDomain = email.split("@")[1];
     const EMAIL_DOMAINS = process.env.EMAIL_DOMAINS.split(",");

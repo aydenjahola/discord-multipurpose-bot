@@ -13,6 +13,15 @@ module.exports = {
     ),
 
   async execute(interaction, client) {
+    // Ensure command is only used in the specified verification channel
+    const verificationChannelName = process.env.VERIFICATION_CHANNEL_NAME;
+    if (interaction.channel.name !== verificationChannelName) {
+      return interaction.reply({
+        content: `This command can only be used in the #${verificationChannelName} channel.`,
+        ephemeral: true,
+      });
+    }
+
     const code = interaction.options.getString("code");
 
     if (!code) {
