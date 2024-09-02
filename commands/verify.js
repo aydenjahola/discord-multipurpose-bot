@@ -13,7 +13,7 @@ const transporter = nodemailer.createTransport({
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("verify")
-    .setDescription("Verify your account with an email address")
+    .setDescription("Verify your account with your DCU email address")
     .addStringOption((option) =>
       option
         .setName("email")

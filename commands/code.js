@@ -17,7 +17,8 @@ module.exports = {
 
     if (!code) {
       return interaction.reply({
-        content: "Please provide the verification code.",
+        content:
+          "Please provide the verification code sent to your DCU email address.",
         ephemeral: true,
       });
     }
