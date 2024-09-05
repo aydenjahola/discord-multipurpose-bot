@@ -29,7 +29,7 @@ module.exports = {
       if (!triviaQuestion || Date.now() - lastApiCall >= API_INTERVAL) {
         // Fetch a new trivia question from OTDB
         const response = await axios.get(
-          "https://opentdb.com/api.php?amount=1&category=15&type=multiple" // Category 15 is for Video Games
+          "https://opentdb.com/api.php?amount=1&category=15" // Category 15 is for Video Games
         );
 
         triviaQuestion = response.data.results[0];
