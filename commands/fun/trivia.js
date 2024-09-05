@@ -94,6 +94,9 @@ module.exports = {
       const incorrectAnswers = triviaQuestion.incorrect_answers.map(decode);
       let allAnswers = [...incorrectAnswers, correctAnswer];
 
+      // Declare answerMap before any conditions
+      let answerMap = {};
+
       // Handle True/False questions specifically
       if (triviaQuestion.type === "boolean") {
         // Always keep "True" as option 1 and "False" as option 2
@@ -102,20 +105,12 @@ module.exports = {
         // Shuffle answers for other types of questions
         allAnswers = allAnswers.sort(() => Math.random() - 0.5);
 
-        // Create a mapping of numbers to answers
+        // Assign the map without redeclaring
         answerMap = allAnswers.reduce((map, answer, index) => {
           map[index + 1] = answer;
           return map;
         }, {});
       }
-
-      allAnswers = allAnswers.sort(() => Math.random() - 0.5); // Shuffle answers
-
-      // Create a mapping of numbers to answers
-      const answerMap = allAnswers.reduce((map, answer, index) => {
-        map[index + 1] = answer;
-        return map;
-      }, {});
 
       // Create an embed with the trivia question and numbered options
       const triviaEmbed = new EmbedBuilder()
