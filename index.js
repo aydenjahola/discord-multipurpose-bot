@@ -18,18 +18,30 @@ const client = new Client({
   ],
 });
 
-const GUIlD_ID = process.env.GUILD_ID;
+const GUILD_ID = process.env.GUILD_ID;
 
 client.commands = new Collection();
 
-const commandFiles = fs
-  .readdirSync(path.join(__dirname, "commands"))
-  .filter((file) => file.endsWith(".js"));
+// Function to recursively read commands from subdirectories
+function loadCommands(dir) {
+  const files = fs.readdirSync(dir);
 
-for (const file of commandFiles) {
-  const command = require(`./commands/${file}`);
-  client.commands.set(command.data.name, command);
+  for (const file of files) {
+    const filePath = path.join(dir, file);
+
+    if (fs.statSync(filePath).isDirectory()) {
+      // If it's a directory, recurse into it
+      loadCommands(filePath);
+    } else if (file.endsWith(".js")) {
+      // If it's a JavaScript file, load the command
+      const command = require(filePath);
+      client.commands.set(command.data.name, command);
+    }
+  }
 }
+
+// Load all commands from the commands directory and its subdirectories
+loadCommands(path.join(__dirname, "commands"));
 
 client.once("ready", async () => {
   console.log(`\n==============================`);
@@ -52,7 +64,7 @@ client.once("ready", async () => {
   const rest = new REST({ version: "10" }).setToken(process.env.BOT_TOKEN);
 
   try {
-    await rest.put(Routes.applicationGuildCommands(client.user.id, GUIlD_ID), {
+    await rest.put(Routes.applicationGuildCommands(client.user.id, GUILD_ID), {
       body: commands,
     });
     console.log("Successfully registered all application commands.");
@@ -77,11 +89,18 @@ client.on("interactionCreate", async (interaction) => {
   try {
     await command.execute(interaction, client);
   } catch (err) {
-    console.error(err);
-    await interaction.reply({
-      content: "There was an error while executing this command!",
-      ephemeral: true,
-    });
+    console.error("Error executing command:", err);
+    if (interaction.deferred || interaction.ephemeral) {
+      await interaction.followUp({
+        content: "There was an error while executing this command!",
+        ephemeral: true,
+      });
+    } else {
+      await interaction.reply({
+        content: "There was an error while executing this command!",
+        ephemeral: true,
+      });
+    }
   }
 });
 

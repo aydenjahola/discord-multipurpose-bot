@@ -1,6 +1,6 @@
 const { SlashCommandBuilder } = require("discord.js");
 const nodemailer = require("nodemailer");
-const VerificationCode = require("../models/VerificationCode");
+const VerificationCode = require("../../models/VerificationCode");
 
 const transporter = nodemailer.createTransport({
   service: "Gmail",

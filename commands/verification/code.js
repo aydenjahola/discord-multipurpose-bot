@@ -1,5 +1,5 @@
 const { SlashCommandBuilder } = require("discord.js");
-const VerificationCode = require("../models/VerificationCode");
+const VerificationCode = require("../../models/VerificationCode");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -89,7 +89,7 @@ module.exports = {
 
       // Get the admin log channel
       const adminLogChannel = client.channels.cache.get(
-        process.env.ADMIN_LOG_CHANNEL_ID
+        process.env.LOG_CHANNEL_ID
       );
 
       if (adminLogChannel) {
