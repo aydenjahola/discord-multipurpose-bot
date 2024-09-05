@@ -6,6 +6,7 @@ const { decode } = require("html-entities");
 
 const API_INTERVAL = 5000; // 5 seconds
 const QUESTION_EXPIRY = 30 * 24 * 60 * 60 * 1000; // 1 month
+const ongoingTrivia = new Set(); // Track users with ongoing trivia
 
 let lastApiCall = 0;
 
@@ -29,6 +30,18 @@ module.exports = {
     const username = interaction.user.username;
     const guild = interaction.guild;
     const timeLimit = 30000; // Time limit for answering in milliseconds
+
+    // Check if the user already has an ongoing trivia game
+    if (ongoingTrivia.has(userId)) {
+      return interaction.reply({
+        content:
+          "You already have an ongoing trivia game. Please finish it before starting a new one.",
+        ephemeral: true, // Only visible to the user
+      });
+    }
+
+    // Add the user to the set of active trivia players
+    ongoingTrivia.add(userId);
 
     const categoryId = interaction.options.getString("category");
     const categoryName = categoryId === "15" ? "Video Games" : "Anime & Manga";
@@ -162,6 +175,9 @@ module.exports = {
       await interaction.followUp(
         `${resultMessage} <@${userId}> You've answered ${userScore.correctAnswers} questions correctly out of ${userScore.gamesPlayed} games.`
       );
+
+      // Remove user from the ongoing trivia set once the game is finished
+      ongoingTrivia.delete(userId);
     });
 
     answerCollector.on("end", (collected, reason) => {
@@ -169,6 +185,9 @@ module.exports = {
         interaction.followUp(
           `<@${userId}> Time's up! You didn't answer in time.`
         );
+
+        // Remove user from the ongoing trivia set when the game times out
+        ongoingTrivia.delete(userId);
       }
     });
   },
