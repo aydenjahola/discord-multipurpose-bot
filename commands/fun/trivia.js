@@ -21,7 +21,8 @@ module.exports = {
         .setRequired(true)
         .addChoices(
           { name: "Video Games", value: "15" },
-          { name: "Anime & Manga", value: "31" }
+          { name: "Anime & Manga", value: "31" },
+          { name: "Computers", value: "18" }
         )
     ),
 
@@ -46,7 +47,11 @@ module.exports = {
     try {
       const categoryId = interaction.options.getString("category");
       const categoryName =
-        categoryId === "15" ? "Video Games" : "Anime & Manga";
+        categoryId === "15"
+          ? "Video Games"
+          : categoryId === "31"
+          ? "Anime & Manga"
+          : "Computers";
 
       // Fetch a trivia question from the cache or the API
       let triviaQuestion = await TriviaQuestion.findOne({
