@@ -198,7 +198,7 @@ module.exports = {
       // Inform the user about the error and let them retry
       await interaction.reply({
         content:
-          "Trivia API hit the rate limit. Please try again in a 5 seconds.",
+          "Trivia API hit the rate limit. Please try again in 5 seconds.",
         ephemeral: true,
       });
 
