@@ -89,7 +89,7 @@ node bot.js
 
 ### Fun Commands
 
-- **/trivia**: Starts a trivia game with video game-themedm Anime & Manga and Computers (more to come soon!) questions. Players have 30 seconds to answer.
+- **/trivia**: Starts a trivia game with video game-themed, Anime & Manga and Computers (more to come soon!) questions. Players have 30 seconds to answer.
 
   - Accepts both number answers (1-4) **or** the correct answer
   - for example:
