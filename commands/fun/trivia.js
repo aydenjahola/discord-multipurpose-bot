@@ -156,7 +156,7 @@ module.exports = {
       console.error("Error executing trivia command:", error);
       if (error.response && error.response.status === 429) {
         await interaction.reply({
-          content: `<@${userId}> The trivia API rate limit has been exceeded. Please try again later.`,
+          content: `<@${userId}> The trivia API rate limit has been exceeded. Please try in 5 seconds.`,
           ephemeral: true,
         });
       } else {
