@@ -96,7 +96,17 @@ module.exports = {
 
       // Handle True/False questions specifically
       if (triviaQuestion.type === "boolean") {
-        allAnswers = ["True", "False"];
+        // Always keep "True" as option 1 and "False" as option 2
+        answerMap = { 1: "True", 2: "False" };
+      } else {
+        // Shuffle answers for other types of questions
+        allAnswers = allAnswers.sort(() => Math.random() - 0.5);
+
+        // Create a mapping of numbers to answers
+        answerMap = allAnswers.reduce((map, answer, index) => {
+          map[index + 1] = answer;
+          return map;
+        }, {});
       }
 
       allAnswers = allAnswers.sort(() => Math.random() - 0.5); // Shuffle answers
