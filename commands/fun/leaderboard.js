@@ -21,17 +21,24 @@ module.exports = {
           try {
             const member = await guild.members.fetch(entry.userId);
             const displayName = member ? member.displayName : entry.username; // Fallback if member not found
-            return `${index + 1}. ${displayName}: ${
-              entry.correctAnswers
-            } correct answers in ${entry.gamesPlayed} games`;
+
+            return {
+              position: index + 1,
+              name: displayName,
+              correctAnswers: entry.correctAnswers,
+              gamesPlayed: entry.gamesPlayed,
+            };
           } catch (error) {
             console.error(
               `Error fetching member for userId: ${entry.userId}`,
               error
             );
-            return `${index + 1}. ${entry.username}: ${
-              entry.correctAnswers
-            } correct answers in ${entry.gamesPlayed} games`;
+            return {
+              position: index + 1,
+              name: entry.username,
+              correctAnswers: entry.correctAnswers,
+              gamesPlayed: entry.gamesPlayed,
+            };
           }
         })
       );
@@ -39,8 +46,18 @@ module.exports = {
       const leaderboardEmbed = new EmbedBuilder()
         .setColor("#0099ff")
         .setTitle("Trivia Leaderboard")
-        .setDescription(leaderboardEntries.join("\n"))
         .setTimestamp();
+
+      // Add each leaderboard entry
+      leaderboardEntries.forEach((entry) => {
+        const fieldValue = `${entry.correctAnswers} correct answers in ${entry.gamesPlayed} games`;
+
+        leaderboardEmbed.addFields({
+          name: `${entry.position}. ${entry.name}`,
+          value: fieldValue,
+          inline: false,
+        });
+      });
 
       if (guild.iconURL()) {
         leaderboardEmbed.setFooter({
