@@ -15,11 +15,11 @@ Welcome to the **Discord Multipurpose Bot**! This bot manages user verification 
 1. **Clone the Repository**
 
 ```sh
-git clone git@github.com:aydenjahola/esports-verification-bot.git
+git clone git@github.com:aydenjahola/discord-multipurpose-bot.git
 ```
 
 ```sh
-cd esports-verification-bot
+cd discord-multipurpose-bot
 ```
 
 2. **Install Dependencies**
@@ -78,8 +78,8 @@ node bot.js
 
 ### Email Verification Commands
 
-- **/verify your_email@example.com**: Sends a verification code to the provided email.
-- **/code your_code**: Validates the provided verification code and completes the verification process.
+- **/verify `your_email@example.com`**: Sends a verification code to the provided email.
+- **/code `your_code`**: Validates the provided verification code and completes the verification process.
 
 ### Moderation Commands
 
@@ -90,7 +90,30 @@ node bot.js
 ### Fun Commands
 
 - **/trivia**: Starts a trivia game with video game-themed questions. Players have 30 seconds to answer.
-  - Accepts both number answers (1-4) **and** the correct answer
+
+  - Accepts both number answers (1-4) **or** the correct answer
+  - for example:
+    ```sh
+    Trivia Question
+    In Terraria, which of these items is NOT crafted at a Mythril Anvil?
+    Option 1
+    Ankh Charm
+    Option 2
+    Sky Fracture
+    Option 3
+    Orichalcum Tools
+    Option 4
+    Venom Staff
+    ```
+    **Answer**
+    ```sh
+    1
+    ```
+    **or**
+    ```sh
+    Ankh Charm
+    ```
+
 - **/leaderboard**: Displays the top 10 players on the trivia leaderboard based on their correct answers.
 
 ### Other Functionalities
