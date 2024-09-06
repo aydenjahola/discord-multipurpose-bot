@@ -33,16 +33,13 @@ const fetchTriviaQuestion = async (categoryId, categoryName) => {
       category: categoryName,
     }).sort({ last_served: 1 });
 
-    // If no old question or API call interval has passed
     if (!triviaQuestion || Date.now() - LAST_API_CALL.time >= API_INTERVAL) {
-      // Fetch a new question from the API
       const response = await axios.get(
         `https://opentdb.com/api.php?amount=1&category=${categoryId}`
       );
       triviaQuestion = response.data.results[0];
       LAST_API_CALL.time = Date.now();
 
-      // Save the new question to the database
       await TriviaQuestion.create({
         question: decode(triviaQuestion.question),
         correct_answer: decode(triviaQuestion.correct_answer),
@@ -51,14 +48,12 @@ const fetchTriviaQuestion = async (categoryId, categoryName) => {
         last_served: null,
       });
 
-      // Fetch the newly created question
       triviaQuestion = await TriviaQuestion.findOne({
         question: decode(triviaQuestion.question),
         category: categoryName,
       });
     }
 
-    // Update the last served timestamp
     if (triviaQuestion) {
       triviaQuestion.last_served = new Date();
       await triviaQuestion.save();
@@ -68,6 +63,29 @@ const fetchTriviaQuestion = async (categoryId, categoryName) => {
   } catch (error) {
     console.error("Error fetching or saving trivia question:", error);
     throw new Error("Error fetching trivia question");
+  }
+};
+
+const getShuffledQuestions = async (categoryName) => {
+  try {
+    const questions = await TriviaQuestion.find({
+      category: categoryName,
+    }).sort({ last_served: 1 });
+
+    if (questions.length === 0) {
+      return [];
+    }
+
+    questions.forEach(async (question) => {
+      question.last_served = new Date();
+      await question.save();
+    });
+
+    // Shuffle questions
+    return questions.sort(() => Math.random() - 0.5);
+  } catch (error) {
+    console.error("Error fetching or shuffling questions:", error);
+    throw new Error("Error fetching questions from database");
   }
 };
 
@@ -224,10 +242,20 @@ module.exports = {
       const categoryId = interaction.options.getString("category");
       const categoryName = CATEGORY_MAP[categoryId] || "Video Games";
 
-      const triviaQuestion = await fetchTriviaQuestion(
-        categoryId,
-        categoryName
-      );
+      let triviaQuestion = await fetchTriviaQuestion(categoryId, categoryName);
+
+      if (!triviaQuestion) {
+        // If all questions have been served, fetch questions from the database
+        const shuffledQuestions = await getShuffledQuestions(categoryName);
+        if (shuffledQuestions.length === 0) {
+          throw new Error("No questions available for this category.");
+        }
+
+        triviaQuestion = shuffledQuestions[0];
+        triviaQuestion.last_served = new Date();
+        await triviaQuestion.save();
+      }
+
       if (!triviaQuestion) throw new Error("Failed to fetch trivia question");
 
       const question = decode(triviaQuestion.question);
