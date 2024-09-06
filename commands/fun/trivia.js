@@ -6,9 +6,8 @@ const { decode } = require("html-entities");
 
 const API_INTERVAL = 5000; // 5 seconds
 const QUESTION_EXPIRY = 30 * 24 * 60 * 60 * 1000; // 1 month
-const ongoingTrivia = new Set(); // Track users with ongoing trivia
-
-let lastApiCall = 0;
+const ONGOING_TRIVIA = new Set(); // Track users with ongoing trivia
+const LAST_API_CALL = { time: 0 }; // Track last API call
 
 const CATEGORY_MAP = {
   15: "Video Games",
@@ -34,13 +33,16 @@ const fetchTriviaQuestion = async (categoryId, categoryName) => {
       category: categoryName,
     }).sort({ last_served: 1 });
 
-    if (!triviaQuestion || Date.now() - lastApiCall >= API_INTERVAL) {
+    // If no old question or API call interval has passed
+    if (!triviaQuestion || Date.now() - LAST_API_CALL.time >= API_INTERVAL) {
+      // Fetch a new question from the API
       const response = await axios.get(
         `https://opentdb.com/api.php?amount=1&category=${categoryId}`
       );
       triviaQuestion = response.data.results[0];
-      lastApiCall = Date.now();
+      LAST_API_CALL.time = Date.now();
 
+      // Save the new question to the database
       await TriviaQuestion.create({
         question: decode(triviaQuestion.question),
         correct_answer: decode(triviaQuestion.correct_answer),
@@ -49,12 +51,14 @@ const fetchTriviaQuestion = async (categoryId, categoryName) => {
         last_served: null,
       });
 
+      // Fetch the newly created question
       triviaQuestion = await TriviaQuestion.findOne({
         question: decode(triviaQuestion.question),
         category: categoryName,
       });
     }
 
+    // Update the last served timestamp
     if (triviaQuestion) {
       triviaQuestion.last_served = new Date();
       await triviaQuestion.save();
@@ -154,14 +158,14 @@ const handleAnswerCollection = async (
           `${resultMessage} <@${userId}> You've answered ${userScore.correctAnswers} questions correctly out of ${userScore.gamesPlayed} games.`
         );
 
-        ongoingTrivia.delete(userId);
+        ONGOING_TRIVIA.delete(userId);
       } catch (error) {
         console.error("Error processing collected answer:", error);
         await interaction.followUp({
           content: "There was an error processing your answer.",
           ephemeral: true,
         });
-        ongoingTrivia.delete(userId);
+        ONGOING_TRIVIA.delete(userId);
       }
     });
 
@@ -170,7 +174,7 @@ const handleAnswerCollection = async (
         interaction.followUp(
           `<@${userId}> Time's up! You didn't answer in time.`
         );
-        ongoingTrivia.delete(userId);
+        ONGOING_TRIVIA.delete(userId);
       }
     });
   } catch (error) {
@@ -179,7 +183,7 @@ const handleAnswerCollection = async (
       content: "There was an error handling your response.",
       ephemeral: true,
     });
-    ongoingTrivia.delete(userId);
+    ONGOING_TRIVIA.delete(userId);
   }
 };
 
@@ -206,7 +210,7 @@ module.exports = {
     const guild = interaction.guild;
     const timeLimit = 30000; // Time limit for answering in milliseconds
 
-    if (ongoingTrivia.has(userId)) {
+    if (ONGOING_TRIVIA.has(userId)) {
       return interaction.reply({
         content:
           "You already have an ongoing trivia game. Please finish it before starting a new one.",
@@ -214,7 +218,7 @@ module.exports = {
       });
     }
 
-    ongoingTrivia.add(userId);
+    ONGOING_TRIVIA.add(userId);
 
     try {
       const categoryId = interaction.options.getString("category");
@@ -267,10 +271,10 @@ module.exports = {
       console.error("Error executing trivia command:", error);
       await interaction.reply({
         content:
-          "Trivia API hit the rate limit. Please try again in 5 seconds.",
+          "Trivia API hit the rate limit or encountered an issue. Please try again in 5 seconds.",
         ephemeral: true,
       });
-      ongoingTrivia.delete(userId);
+      ONGOING_TRIVIA.delete(userId);
     }
   },
 };
