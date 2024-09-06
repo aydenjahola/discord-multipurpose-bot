@@ -20,9 +20,14 @@ module.exports = {
         .setDescription("Choose a trivia category")
         .setRequired(true)
         .addChoices(
+          { name: "General Knowledge", value: "9" },
           { name: "Video Games", value: "15" },
           { name: "Anime & Manga", value: "31" },
-          { name: "Computers", value: "18" }
+          { name: "Computers", value: "18" },
+          { name: "Board Games", value: "16" },
+          { name: "Comics", value: "29" },
+          { name: "Cartoons & Animations", value: "32" },
+          { name: "Film", value: "11" }
         )
     ),
 
@@ -46,12 +51,28 @@ module.exports = {
 
     try {
       const categoryId = interaction.options.getString("category");
-      const categoryName =
-        categoryId === "15"
-          ? "Video Games"
-          : categoryId === "31"
-          ? "Anime & Manga"
-          : "Computers";
+      const categoryName = (() => {
+        switch (categoryId) {
+          case "15":
+            return "Video Games";
+          case "31":
+            return "Anime & Manga";
+          case "18":
+            return "Computers";
+          case "16":
+            return "Board Games";
+          case "29":
+            return "Comics";
+          case "32":
+            return "Cartoons & Animations";
+          case "11":
+            return "Film";
+          case "9":
+            return "General Knowledge";
+          default:
+            return "Video Games";
+        }
+      })();
 
       // Fetch a trivia question from the cache or the API
       let triviaQuestion = await TriviaQuestion.findOne({
