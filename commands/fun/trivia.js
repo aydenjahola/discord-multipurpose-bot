@@ -28,7 +28,11 @@ module.exports = {
           { name: "Comics", value: "29" },
           { name: "Cartoons & Animations", value: "32" },
           { name: "Film", value: "11" },
-          { name: "Science & Nature", value: "17" }
+          { name: "Science & Nature", value: "17" },
+          { name: "Animals", value: "27" },
+          { name: "Music", value: "12" },
+          { name: "History", value: "23" },
+          { name: "Geography", value: "22" }
         )
     ),
 
@@ -72,6 +76,14 @@ module.exports = {
             return "General Knowledge";
           case "17":
             return "Science & Nature";
+          case "27":
+            return "Animals";
+          case "12":
+            return "Music";
+          case "23":
+            return "History";
+          case "22":
+            return "Geography";
           default:
             return "Video Games";
         }
