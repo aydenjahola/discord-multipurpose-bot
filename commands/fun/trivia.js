@@ -32,7 +32,8 @@ module.exports = {
           { name: "Animals", value: "27" },
           { name: "Music", value: "12" },
           { name: "History", value: "23" },
-          { name: "Geography", value: "22" }
+          { name: "Geography", value: "22" },
+          { name: "Mythology", value: "20" }
         )
     ),
 
@@ -84,6 +85,8 @@ module.exports = {
             return "History";
           case "22":
             return "Geography";
+          case "20":
+            return "Mythology";
           default:
             return "Video Games";
         }
