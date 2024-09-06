@@ -27,7 +27,8 @@ module.exports = {
           { name: "Board Games", value: "16" },
           { name: "Comics", value: "29" },
           { name: "Cartoons & Animations", value: "32" },
-          { name: "Film", value: "11" }
+          { name: "Film", value: "11" },
+          { name: "Science & Nature", value: "17" }
         )
     ),
 
@@ -69,6 +70,8 @@ module.exports = {
             return "Film";
           case "9":
             return "General Knowledge";
+          case "17":
+            return "Science & Nature";
           default:
             return "Video Games";
         }
