@@ -91,7 +91,7 @@ module.exports = {
             return "Video Games";
         }
       })()
-        .replace(/[^a-zA-Z0-9 ]/g, "")
+        .replace(/[^a-zA-Z0-9 &]/g, "")
         .trim(); // Remove special characters and trim the category name for MongoDB query purposes in the Emebed title
 
       // Fetch a trivia question from the cache or the API
