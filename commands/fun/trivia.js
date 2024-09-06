@@ -90,7 +90,9 @@ module.exports = {
           default:
             return "Video Games";
         }
-      })();
+      })()
+        .replace(/[^a-zA-Z0-9 ]/g, "")
+        .trim(); // Remove special characters and trim the category name for MongoDB query purposes in the Emebed title
 
       // Fetch a trivia question from the cache or the API
       let triviaQuestion = await TriviaQuestion.findOne({
@@ -154,7 +156,7 @@ module.exports = {
       // Create an embed with the trivia question and numbered options
       const triviaEmbed = new EmbedBuilder()
         .setColor("#0099ff")
-        .setTitle("Trivia Question")
+        .setTitle(`${categoryName} Trivia Question`)
         .setDescription(question)
         .addFields(
           Object.entries(answerMap).map(([number, answer]) => ({
