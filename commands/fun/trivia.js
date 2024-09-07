@@ -191,11 +191,27 @@ const handleAnswerCollection = async (
       }
     });
 
-    answerCollector.on("end", (collected, reason) => {
+    answerCollector.on("end", async (collected, reason) => {
       if (reason === "time") {
-        interaction.followUp(
-          `<@${userId}> Time's up! the correct answer is **${correctAnswer}.**`
-        );
+        // Reset the user's streak when time runs out
+        try {
+          let userScore = await Leaderboard.findOne({ userId });
+          if (userScore) {
+            userScore.streak = 0; // Reset streak
+            await userScore.save();
+          }
+
+          await interaction.followUp(
+            `<@${userId}> Time's up! The correct answer is **${correctAnswer}**. Your current streak is **${userScore.streak}**.`
+          );
+        } catch (error) {
+          console.error("Error resetting streak after time limit:", error);
+          await interaction.followUp({
+            content: "There was an error resetting your streak.",
+            ephemeral: true,
+          });
+        }
+
         ONGOING_TRIVIA.delete(userId);
       }
     });
