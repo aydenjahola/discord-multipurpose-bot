@@ -154,7 +154,7 @@ const handleAnswerCollection = async (
         let resultMessage =
           userAnswer === correctAnswer
             ? "Correct!"
-            : "Incorrect! Better luck next time.";
+            : `Incorrect! the correct answer is **${correctAnswer}.**`;
 
         let userScore = await Leaderboard.findOne({ userId });
         if (!userScore) {
@@ -190,7 +190,7 @@ const handleAnswerCollection = async (
     answerCollector.on("end", (collected, reason) => {
       if (reason === "time") {
         interaction.followUp(
-          `<@${userId}> Time's up! You didn't answer in time.`
+          `<@${userId}> Time's up! the correct answer is **${correctAnswer}.**`
         );
         ONGOING_TRIVIA.delete(userId);
       }
