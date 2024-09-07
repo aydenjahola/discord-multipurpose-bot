@@ -163,17 +163,21 @@ const handleAnswerCollection = async (
             username,
             gamesPlayed: 1,
             correctAnswers: userAnswer === correctAnswer ? 1 : 0,
+            streak: userAnswer === correctAnswer ? 1 : 0, // Start streak
           });
         } else {
           userScore.gamesPlayed += 1;
           if (userAnswer === correctAnswer) {
             userScore.correctAnswers += 1;
+            userScore.streak += 1; // Increment streak
+          } else {
+            userScore.streak = 0; // Reset streak
           }
         }
         await userScore.save();
 
         await interaction.followUp(
-          `${resultMessage} <@${userId}> You've answered ${userScore.correctAnswers} questions correctly out of ${userScore.gamesPlayed} games.`
+          `${resultMessage} <@${userId}> You've answered ${userScore.correctAnswers} questions correctly out of ${userScore.gamesPlayed} games. Your current streak is **${userScore.streak}**.`
         );
 
         ONGOING_TRIVIA.delete(userId);

@@ -27,6 +27,7 @@ module.exports = {
               name: displayName,
               correctAnswers: entry.correctAnswers,
               gamesPlayed: entry.gamesPlayed,
+              streak: entry.streak, // Include streak
             };
           } catch (error) {
             console.error(
@@ -38,6 +39,7 @@ module.exports = {
               name: entry.username,
               correctAnswers: entry.correctAnswers,
               gamesPlayed: entry.gamesPlayed,
+              streak: entry.streak, // Include streak
             };
           }
         })
@@ -50,7 +52,7 @@ module.exports = {
 
       // Add each leaderboard entry
       leaderboardEntries.forEach((entry) => {
-        const fieldValue = `${entry.correctAnswers} correct answers in ${entry.gamesPlayed} games`;
+        const fieldValue = `${entry.correctAnswers} correct answers in ${entry.gamesPlayed} games\nCurrent streak: ${entry.streak}`;
 
         leaderboardEmbed.addFields({
           name: `${entry.position}. ${entry.name}`,

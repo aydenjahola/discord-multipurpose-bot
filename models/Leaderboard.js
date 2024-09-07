@@ -5,6 +5,7 @@ const leaderboardSchema = new mongoose.Schema({
   username: { type: String, required: true },
   gamesPlayed: { type: Number, default: 0 },
   correctAnswers: { type: Number, default: 0 },
+  streak: { type: Number, default: 0 },
 });
 
 const Leaderboard = mongoose.model("Leaderboard", leaderboardSchema);
