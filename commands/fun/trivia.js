@@ -28,38 +28,50 @@ const CATEGORY_MAP = {
 
 const fetchTriviaQuestion = async (categoryId, categoryName) => {
   try {
-    let triviaQuestion = await TriviaQuestion.findOne({
+    let triviaQuestion;
+    let source = "API"; // Default to API
+
+    // Attempt to find a question in the database that hasn't been served recently
+    triviaQuestion = await TriviaQuestion.findOne({
       last_served: { $lt: new Date(Date.now() - QUESTION_EXPIRY) },
       category: categoryName,
     }).sort({ last_served: 1 });
 
     if (!triviaQuestion || Date.now() - LAST_API_CALL.time >= API_INTERVAL) {
+      // If no question was found in the database or API cooldown is over, fetch from API
       const response = await axios.get(
         `https://opentdb.com/api.php?amount=1&category=${categoryId}`
       );
-      triviaQuestion = response.data.results[0];
-      LAST_API_CALL.time = Date.now();
+      const apiQuestion = response.data.results[0];
 
+      // Save the API question in the database
       await TriviaQuestion.create({
-        question: decode(triviaQuestion.question),
-        correct_answer: decode(triviaQuestion.correct_answer),
-        incorrect_answers: triviaQuestion.incorrect_answers.map(decode),
+        question: decode(apiQuestion.question),
+        correct_answer: decode(apiQuestion.correct_answer),
+        incorrect_answers: apiQuestion.incorrect_answers.map(decode),
         category: categoryName,
         last_served: null,
       });
 
+      // Re-fetch it from the database to return the saved question object
       triviaQuestion = await TriviaQuestion.findOne({
-        question: decode(triviaQuestion.question),
+        question: decode(apiQuestion.question),
         category: categoryName,
       });
+
+      LAST_API_CALL.time = Date.now(); // Update the last API call time
+    } else {
+      // If found in the database, set source to "Database"
+      source = "Database";
     }
 
     if (triviaQuestion) {
+      // Update the `last_served` timestamp when serving the question
       triviaQuestion.last_served = new Date();
       await triviaQuestion.save();
     }
 
-    return triviaQuestion;
+    return { triviaQuestion, source }; // Return both the question and its source
   } catch (error) {
     console.error("Error fetching or saving trivia question:", error);
     throw new Error("Error fetching trivia question");
@@ -94,7 +106,8 @@ const createTriviaEmbed = (
   question,
   answerMap,
   guild,
-  timeLimit
+  timeLimit,
+  source
 ) => {
   return new EmbedBuilder()
     .setColor("#0099ff")
@@ -109,7 +122,9 @@ const createTriviaEmbed = (
     )
     .setTimestamp()
     .setFooter({
-      text: `${guild.name} | Answer within ${timeLimit / 1000} seconds`,
+      text: `${guild.name} | Answer within ${
+        timeLimit / 1000
+      } seconds | Source: ${source}`,
       iconURL: guild.iconURL(),
     });
 };
@@ -262,21 +277,14 @@ module.exports = {
       const categoryId = interaction.options.getString("category");
       const categoryName = CATEGORY_MAP[categoryId] || "Video Games";
 
-      let triviaQuestion = await fetchTriviaQuestion(categoryId, categoryName);
+      const { triviaQuestion, source } = await fetchTriviaQuestion(
+        categoryId,
+        categoryName
+      );
 
       if (!triviaQuestion) {
-        // If all questions have been served, fetch questions from the database
-        const shuffledQuestions = await getShuffledQuestions(categoryName);
-        if (shuffledQuestions.length === 0) {
-          throw new Error("No questions available for this category.");
-        }
-
-        triviaQuestion = shuffledQuestions[0];
-        triviaQuestion.last_served = new Date();
-        await triviaQuestion.save();
+        throw new Error("No questions available.");
       }
-
-      if (!triviaQuestion) throw new Error("Failed to fetch trivia question");
 
       const question = decode(triviaQuestion.question);
       const correctAnswer = decode(triviaQuestion.correct_answer);
@@ -300,7 +308,8 @@ module.exports = {
         question,
         answerMap,
         guild,
-        timeLimit
+        timeLimit,
+        source // Pass the source flag (API or Database)
       );
 
       await interaction.reply({ embeds: [triviaEmbed] });
