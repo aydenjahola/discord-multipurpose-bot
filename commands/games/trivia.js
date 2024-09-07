@@ -6,7 +6,7 @@ const { decode } = require("html-entities");
 
 const API_INTERVAL = 5000; // 5 seconds
 const QUESTION_EXPIRY = 30 * 24 * 60 * 60 * 1000; // 1 month
-const ONGOING_TRIVIA = new Set(); // Track users with ongoing trivia
+const ACTIVE_GAMES = new Set(); // Track users with ongoing trivia
 const LAST_API_CALL = { time: 0 }; // Track last API call
 
 const CATEGORY_MAP = {
@@ -168,8 +168,8 @@ const handleAnswerCollection = async (
 
         let resultMessage =
           userAnswer === correctAnswer
-            ? "Correct!"
-            : `Incorrect! the correct answer is **${correctAnswer}.**`;
+            ? "🎉 Correct!"
+            : `❌ Incorrect! the correct answer is **${correctAnswer}.**`;
 
         let userScore = await Leaderboard.findOne({ userId });
         if (!userScore) {
@@ -195,14 +195,14 @@ const handleAnswerCollection = async (
           `${resultMessage} <@${userId}> You've answered ${userScore.correctAnswers} questions correctly out of ${userScore.gamesPlayed} games. Your current streak is **${userScore.streak}**.`
         );
 
-        ONGOING_TRIVIA.delete(userId);
+        ACTIVE_GAMES.delete(userId);
       } catch (error) {
         console.error("Error processing collected answer:", error);
         await interaction.followUp({
           content: "There was an error processing your answer.",
           ephemeral: true,
         });
-        ONGOING_TRIVIA.delete(userId);
+        ACTIVE_GAMES.delete(userId);
       }
     });
 
@@ -217,7 +217,7 @@ const handleAnswerCollection = async (
           }
 
           await interaction.followUp(
-            `<@${userId}> Time's up! The correct answer is **${correctAnswer}**. Your current streak is **${userScore.streak}**.`
+            `⏰ <@${userId}> Time's up! The correct answer is **${correctAnswer}**. Your current streak is **${userScore.streak}**.`
           );
         } catch (error) {
           console.error("Error resetting streak after time limit:", error);
@@ -227,7 +227,7 @@ const handleAnswerCollection = async (
           });
         }
 
-        ONGOING_TRIVIA.delete(userId);
+        ACTIVE_GAMES.delete(userId);
       }
     });
   } catch (error) {
@@ -236,7 +236,7 @@ const handleAnswerCollection = async (
       content: "There was an error handling your response.",
       ephemeral: true,
     });
-    ONGOING_TRIVIA.delete(userId);
+    ACTIVE_GAMES.delete(userId);
   }
 };
 
@@ -263,7 +263,7 @@ module.exports = {
     const guild = interaction.guild;
     const timeLimit = 30000; // Time limit for answering in milliseconds
 
-    if (ONGOING_TRIVIA.has(userId)) {
+    if (ACTIVE_GAMES.has(userId)) {
       return interaction.reply({
         content:
           "You already have an ongoing trivia game. Please finish it before starting a new one.",
@@ -271,7 +271,7 @@ module.exports = {
       });
     }
 
-    ONGOING_TRIVIA.add(userId);
+    ACTIVE_GAMES.add(userId);
 
     try {
       const categoryId = interaction.options.getString("category");
@@ -331,7 +331,7 @@ module.exports = {
           "Trivia API hit the rate limit or encountered an issue. Please try again in 5 seconds.",
         ephemeral: true,
       });
-      ONGOING_TRIVIA.delete(userId);
+      ACTIVE_GAMES.delete(userId);
     }
   },
 };
