@@ -1,6 +1,6 @@
 const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
 const axios = require("axios");
-const ScrambledWord = require("../../models/ScrambledWord"); // Your database model for scrambled words
+const ScrambledWord = require("../../models/ScrambledWord");
 
 const ACTIVE_GAMES = new Set(); // Track users with ongoing games
 
@@ -33,7 +33,7 @@ const createScrambleEmbed = (scrambledWord, guild, timeLimit) => {
     .setTimestamp()
     .setFooter({
       text: `${guild.name} | Answer within ${timeLimit / 1000} seconds`,
-      iconURL: guild.iconURL(), // Server avatar
+      iconURL: guild.iconURL(),
     });
 };
 
