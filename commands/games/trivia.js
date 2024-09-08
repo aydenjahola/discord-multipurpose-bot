@@ -100,31 +100,45 @@ const fetchTriviaQuestion = async (categoryId, categoryName) => {
           `https://opentdb.com/api.php?amount=1&category=${categoryId}&token=${sessionToken}`
         );
         const retryApiQuestion = retryResponse.data.results[0];
-        await TriviaQuestion.create({
-          question: decode(retryApiQuestion.question),
-          correct_answer: decode(retryApiQuestion.correct_answer),
-          incorrect_answers: retryApiQuestion.incorrect_answers.map(decode),
-          category: categoryName,
-          last_served: null,
-        });
-
         triviaQuestion = await TriviaQuestion.findOne({
           question: decode(retryApiQuestion.question),
           category: categoryName,
         });
+
+        if (!triviaQuestion) {
+          await TriviaQuestion.create({
+            question: decode(retryApiQuestion.question),
+            correct_answer: decode(retryApiQuestion.correct_answer),
+            incorrect_answers: retryApiQuestion.incorrect_answers.map(decode),
+            category: categoryName,
+            last_served: null,
+          });
+
+          triviaQuestion = await TriviaQuestion.findOne({
+            question: decode(retryApiQuestion.question),
+            category: categoryName,
+          });
+        }
       } else {
-        await TriviaQuestion.create({
-          question: decode(apiQuestion.question),
-          correct_answer: decode(apiQuestion.correct_answer),
-          incorrect_answers: apiQuestion.incorrect_answers.map(decode),
-          category: categoryName,
-          last_served: null,
-        });
-
         triviaQuestion = await TriviaQuestion.findOne({
           question: decode(apiQuestion.question),
           category: categoryName,
         });
+
+        if (!triviaQuestion) {
+          await TriviaQuestion.create({
+            question: decode(apiQuestion.question),
+            correct_answer: decode(apiQuestion.correct_answer),
+            incorrect_answers: apiQuestion.incorrect_answers.map(decode),
+            category: categoryName,
+            last_served: null,
+          });
+
+          triviaQuestion = await TriviaQuestion.findOne({
+            question: decode(apiQuestion.question),
+            category: categoryName,
+          });
+        }
       }
 
       LAST_API_CALL.time = Date.now(); // Update the last API call time
