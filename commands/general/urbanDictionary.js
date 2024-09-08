@@ -91,7 +91,7 @@ module.exports = {
           }
         )
         .setFooter({
-          text: `${serverName} | Source: ${source}`,
+          text: `${serverName} | Powered by Urban Dictionary | Source: ${source}`,
           iconURL: serverIcon,
         })
         .setTimestamp();
