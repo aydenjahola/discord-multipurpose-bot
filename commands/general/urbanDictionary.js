@@ -1,6 +1,6 @@
 const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
 const axios = require("axios");
-const Definition = require("../../models/UrbanDictionary");
+const UrbanDictionary = require("../../models/UrbanDictionary");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -21,7 +21,7 @@ module.exports = {
 
     try {
       // Check if the term exists in the database
-      let definition = await Definition.findOne({ term });
+      let definition = await UrbanDictionary.findOne({ term });
 
       if (!definition) {
         // If definition is not found, fetch from the API
@@ -50,7 +50,7 @@ module.exports = {
         }
 
         // Save the new definition to the database
-        definition = new Definition({
+        definition = new UrbanDictionary({
           term,
           definition: data.list[0].definition,
           example: data.list[0].example || "No example provided",

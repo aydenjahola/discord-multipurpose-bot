@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const definitionSchema = new mongoose.Schema({
+const UrbanDictionarySchema = new mongoose.Schema({
   term: { type: String, required: true, unique: true, trim: true },
   definition: { type: String, required: true },
   example: { type: String, default: "No example provided" },
@@ -9,6 +9,9 @@ const definitionSchema = new mongoose.Schema({
   thumbs_down: { type: Number, default: 0 },
 });
 
-const Definition = mongoose.model("Definition", definitionSchema);
+const UrbanDictionary = mongoose.model(
+  "UrbanDictionary",
+  UrbanDictionarySchema
+);
 
-module.exports = Definition;
+module.exports = UrbanDictionary;
