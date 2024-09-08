@@ -23,7 +23,7 @@ const scrambleWord = (word) => {
     .join("");
 };
 
-const createScrambleEmbed = (scrambledWord, guild, timeLimit) => {
+const createScrambleEmbed = (scrambledWord, guild, timeLimit, source) => {
   return new EmbedBuilder()
     .setColor("#0099ff")
     .setTitle("Word Scramble")
@@ -32,7 +32,9 @@ const createScrambleEmbed = (scrambledWord, guild, timeLimit) => {
     )
     .setTimestamp()
     .setFooter({
-      text: `${guild.name} | Answer within ${timeLimit / 1000} seconds`,
+      text: `${guild.name} | Answer within ${
+        timeLimit / 1000
+      } seconds | Source: ${source}`,
       iconURL: guild.iconURL(),
     });
 };
@@ -79,6 +81,23 @@ const handleScrambleAnswer = async (
   }
 };
 
+const getUniqueWord = async () => {
+  let originalWord;
+  let source = "API";
+
+  while (true) {
+    originalWord = await fetchRandomWord();
+    const existingWord = await ScrambledWord.findOne({ word: originalWord });
+
+    if (!existingWord) {
+      // Word is unique, break the loop
+      break;
+    }
+  }
+
+  return { originalWord, source };
+};
+
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("scramble")
@@ -100,7 +119,7 @@ module.exports = {
     ACTIVE_GAMES.add(userId);
 
     try {
-      const originalWord = await fetchRandomWord();
+      const { originalWord, source } = await getUniqueWord();
       const scrambledWord = scrambleWord(originalWord);
 
       // Save to database
@@ -113,7 +132,8 @@ module.exports = {
       const scrambleEmbed = createScrambleEmbed(
         scrambledWord,
         guild,
-        timeLimit
+        timeLimit,
+        source
       );
       await interaction.reply({ embeds: [scrambleEmbed] });
 
