@@ -1,8 +1,9 @@
 const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
 const axios = require("axios");
+const { decode } = require("html-entities");
 const TriviaQuestion = require("../../models/TriviaQuestion");
 const Leaderboard = require("../../models/Leaderboard");
-const { decode } = require("html-entities");
+const TriviaSession = require("../../models/TriviaSession");
 
 const API_INTERVAL = 5000; // 5 seconds
 const QUESTION_EXPIRY = 30 * 24 * 60 * 60 * 1000; // 1 month
@@ -26,10 +27,57 @@ const CATEGORY_MAP = {
   20: "Mythology",
 };
 
+// Fetch or create a new session token from the database
+const getSessionToken = async () => {
+  let session = await TriviaSession.findOne();
+
+  if (!session) {
+    // If no token exists, request a new one
+    const response = await axios.get(
+      "https://opentdb.com/api_token.php?command=request"
+    );
+    const newToken = response.data.token;
+
+    session = new TriviaSession({
+      token: newToken,
+    });
+
+    await session.save();
+  }
+
+  return session.token;
+};
+
+// Reset the session token if it's exhausted and update the database
+const resetSessionToken = async () => {
+  let session = await TriviaSession.findOne();
+
+  if (!session) {
+    // If there's no session, create a new one as fallback
+    return await getSessionToken();
+  }
+
+  // Reset the session token
+  const response = await axios.get(
+    `https://opentdb.com/api_token.php?command=reset&token=${session.token}`
+  );
+  const newToken = response.data.token;
+
+  // Update token in the database
+  session.token = newToken;
+  session.last_updated = new Date();
+  await session.save();
+
+  return newToken;
+};
+
 const fetchTriviaQuestion = async (categoryId, categoryName) => {
   try {
     let triviaQuestion;
     let source = "API"; // Default to API
+
+    // Get session token before making API call
+    let sessionToken = await getSessionToken();
 
     // Attempt to find a question in the database that hasn't been served recently
     triviaQuestion = await TriviaQuestion.findOne({
@@ -40,24 +88,44 @@ const fetchTriviaQuestion = async (categoryId, categoryName) => {
     if (!triviaQuestion || Date.now() - LAST_API_CALL.time >= API_INTERVAL) {
       // If no question was found in the database or API cooldown is over, fetch from API
       const response = await axios.get(
-        `https://opentdb.com/api.php?amount=1&category=${categoryId}`
+        `https://opentdb.com/api.php?amount=1&category=${categoryId}&token=${sessionToken}`
       );
       const apiQuestion = response.data.results[0];
 
-      // Save the API question in the database
-      await TriviaQuestion.create({
-        question: decode(apiQuestion.question),
-        correct_answer: decode(apiQuestion.correct_answer),
-        incorrect_answers: apiQuestion.incorrect_answers.map(decode),
-        category: categoryName,
-        last_served: null,
-      });
+      // Check if the token is exhausted (response code 4 indicates this)
+      if (response.data.response_code === 4) {
+        sessionToken = await resetSessionToken(); // Reset session token
+        // Retry fetching the question with the new token
+        const retryResponse = await axios.get(
+          `https://opentdb.com/api.php?amount=1&category=${categoryId}&token=${sessionToken}`
+        );
+        const retryApiQuestion = retryResponse.data.results[0];
+        await TriviaQuestion.create({
+          question: decode(retryApiQuestion.question),
+          correct_answer: decode(retryApiQuestion.correct_answer),
+          incorrect_answers: retryApiQuestion.incorrect_answers.map(decode),
+          category: categoryName,
+          last_served: null,
+        });
 
-      // Re-fetch it from the database to return the saved question object
-      triviaQuestion = await TriviaQuestion.findOne({
-        question: decode(apiQuestion.question),
-        category: categoryName,
-      });
+        triviaQuestion = await TriviaQuestion.findOne({
+          question: decode(retryApiQuestion.question),
+          category: categoryName,
+        });
+      } else {
+        await TriviaQuestion.create({
+          question: decode(apiQuestion.question),
+          correct_answer: decode(apiQuestion.correct_answer),
+          incorrect_answers: apiQuestion.incorrect_answers.map(decode),
+          category: categoryName,
+          last_served: null,
+        });
+
+        triviaQuestion = await TriviaQuestion.findOne({
+          question: decode(apiQuestion.question),
+          category: categoryName,
+        });
+      }
 
       LAST_API_CALL.time = Date.now(); // Update the last API call time
     } else {
@@ -75,29 +143,6 @@ const fetchTriviaQuestion = async (categoryId, categoryName) => {
   } catch (error) {
     console.error("Error fetching or saving trivia question:", error);
     throw new Error("Error fetching trivia question");
-  }
-};
-
-const getShuffledQuestions = async (categoryName) => {
-  try {
-    const questions = await TriviaQuestion.find({
-      category: categoryName,
-    }).sort({ last_served: 1 });
-
-    if (questions.length === 0) {
-      return [];
-    }
-
-    questions.forEach(async (question) => {
-      question.last_served = new Date();
-      await question.save();
-    });
-
-    // Shuffle questions
-    return questions.sort(() => Math.random() - 0.5);
-  } catch (error) {
-    console.error("Error fetching or shuffling questions:", error);
-    throw new Error("Error fetching questions from database");
   }
 };
 
