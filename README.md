@@ -30,32 +30,7 @@ npm install
 
 3. **Set Up Environment Variables**
 
-Create a `.env` file in the root directory and add the following:
-
-```env
-# Bot token
-BOT_TOKEN=YOUR_BOT_TOKEN
-
-# Nodemailer
-EMAIL_NAME="Example"
-EMAIL_USER=example@example.com
-EMAIL_PASS=YOUR_EMAIL_PASS
-
-# Allowed domains for email verification
-EMAIL_DOMAINS=example@example.com // or it can be a list, example: example.com,example2.com
-
-# Discord
-GUILD_ID=YOUR_GUILD_ID
-VERIFICATION_CHANNEL_NAME=YOUR_VERIFICATION_CHANNEL_NAME
-VERIFIED_ROLE_NAME=YOUR_VERIFIED_ROLE_NAME
-LOG_CHANNEL_ID=YOUR_LOG_CHANNEL_ID
-MOD_ROLE_ID=YOUR_MOD_ROLE_ID
-
-# Database
-MONGODB_URI=YOUR_MONGODB_URI
-```
-
-this can also be seen in in the [.env.example](./.env.example)
+rename the [`.env.example`](./.env.example) to `.env` and fill in the required environments
 
 4. **Run the Bot**
 
