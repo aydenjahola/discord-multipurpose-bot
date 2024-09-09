@@ -108,7 +108,7 @@ const fetchTriviaQuestion = async (categoryId, categoryName) => {
       );
       const apiQuestion = response.data.results[0];
 
-      // Check if the token is exhausted (response code 4 indicates this)
+      // Check if the token is exhausted (response code 3 indicates this)
       if (response.data.response_code === 3) {
         // Token not found
         sessionToken = await getSessionToken(); // Create a new token
