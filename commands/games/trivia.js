@@ -54,21 +54,37 @@ const resetSessionToken = async () => {
 
   if (!session) {
     // If there's no session, create a new one as fallback
+    console.log("No session found, generating a new one.");
     return await getSessionToken();
   }
+
+  // Log the old token for comparison
+  console.log("Old token:", session.token);
 
   // Reset the session token
   const response = await axios.get(
     `https://opentdb.com/api_token.php?command=reset&token=${session.token}`
   );
-  const newToken = response.data.token;
 
-  // Update token in the database
-  session.token = newToken;
-  session.last_updated = new Date();
-  await session.save();
+  if (response.data.response_code === 0) {
+    const newToken = response.data.token || session.token; // Sometimes the token might remain the same
 
-  return newToken;
+    // Log the new token to ensure it's correctly reset
+    console.log("New token:", newToken);
+
+    // Update token in the database
+    session.token = newToken;
+    session.last_updated = new Date();
+    await session.save();
+
+    return newToken;
+  } else {
+    console.error(
+      "Failed to reset the token, response code:",
+      response.data.response_code
+    );
+    throw new Error("Unable to reset the session token.");
+  }
 };
 
 const fetchTriviaQuestion = async (categoryId, categoryName) => {
@@ -93,9 +109,10 @@ const fetchTriviaQuestion = async (categoryId, categoryName) => {
       const apiQuestion = response.data.results[0];
 
       // Check if the token is exhausted (response code 4 indicates this)
-      if (response.data.response_code === 4) {
-        sessionToken = await resetSessionToken(); // Reset session token
-        // Retry fetching the question with the new token
+      if (response.data.response_code === 3) {
+        // Token not found
+        sessionToken = await getSessionToken(); // Create a new token
+        // Retry fetching the question
         const retryResponse = await axios.get(
           `https://opentdb.com/api.php?amount=1&category=${categoryId}&token=${sessionToken}`
         );
