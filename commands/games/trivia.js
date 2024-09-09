@@ -88,7 +88,7 @@ const fetchTriviaQuestion = async (categoryId, categoryName) => {
     if (!triviaQuestion || Date.now() - LAST_API_CALL.time >= API_INTERVAL) {
       // If no question was found in the database or API cooldown is over, fetch from API
       const response = await axios.get(
-        `https://opentdb.com/api.php?amount=1&category=${categoryId}&token=${sessionToken}`
+        `https://opentdb.com/api.php?amount=1&category=${categoryId}`
       );
       const apiQuestion = response.data.results[0];
 
@@ -97,7 +97,7 @@ const fetchTriviaQuestion = async (categoryId, categoryName) => {
         sessionToken = await resetSessionToken(); // Reset session token
         // Retry fetching the question with the new token
         const retryResponse = await axios.get(
-          `https://opentdb.com/api.php?amount=1&category=${categoryId}&token=${sessionToken}`
+          `https://opentdb.com/api.php?amount=1&category=${categoryId}`
         );
         const retryApiQuestion = retryResponse.data.results[0];
         triviaQuestion = await TriviaQuestion.findOne({
