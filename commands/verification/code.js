@@ -84,21 +84,33 @@ module.exports = {
         });
       }
 
+      // Add the verified role to the member
       await member.roles.add(role);
+      // Delete the verification code entry
       await VerificationCode.deleteOne({ userId: interaction.user.id, code });
 
-      // Get the admin log channel
+      // Get the admin log channel and send a log message
       const adminLogChannel = client.channels.cache.get(
         process.env.LOG_CHANNEL_ID
       );
-
       if (adminLogChannel) {
-        // Send the log message
         await adminLogChannel.send({
           content: `🎉 **Verification Success**\nUser: <@${interaction.user.id}> (${interaction.user.tag})\nRole: ${role.name}`,
         });
       } else {
         console.error("Admin log channel not found.");
+      }
+
+      // Get the general channel and send a welcome message
+      const generalChannel = client.channels.cache.get(
+        process.env.GENERAL_CHANNEL_ID
+      );
+      if (generalChannel) {
+        await generalChannel.send({
+          content: `Welcome <@${interaction.user.id}> to the server! 🎉`,
+        });
+      } else {
+        console.error("General channel not found.");
       }
 
       return interaction.reply({
