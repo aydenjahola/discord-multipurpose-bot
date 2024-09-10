@@ -4,6 +4,8 @@ const { decode } = require("html-entities");
 const TriviaQuestion = require("../../models/TriviaQuestion");
 const Leaderboard = require("../../models/Leaderboard");
 
+// WARNING: this code is by means not perfect, and it might have questionable implementation but its still a good starting point and under development. feel free to suggest improvements.
+
 const API_INTERVAL = 5000; // 5 seconds
 const QUESTION_EXPIRY = 30 * 24 * 60 * 60 * 1000; // 1 month
 const ACTIVE_GAMES = new Set(); // Track users with ongoing trivia
