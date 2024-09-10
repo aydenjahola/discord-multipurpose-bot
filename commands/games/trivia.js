@@ -3,7 +3,6 @@ const axios = require("axios");
 const { decode } = require("html-entities");
 const TriviaQuestion = require("../../models/TriviaQuestion");
 const Leaderboard = require("../../models/Leaderboard");
-const TriviaSession = require("../../models/TriviaSession");
 
 const API_INTERVAL = 5000; // 5 seconds
 const QUESTION_EXPIRY = 30 * 24 * 60 * 60 * 1000; // 1 month
@@ -27,64 +26,12 @@ const CATEGORY_MAP = {
   20: "Mythology",
 };
 
-// Fetch or create a new session token from the database
-const getSessionToken = async () => {
-  let session = await TriviaSession.findOne();
-
-  if (!session) {
-    // If no token exists, request a new one
-    const response = await axios.get(
-      "https://opentdb.com/api_token.php?command=request"
-    );
-    const newToken = response.data.token;
-
-    session = new TriviaSession({
-      token: newToken,
-    });
-
-    await session.save();
-  }
-
-  return session.token;
-};
-
-// Reset the session token if it's exhausted and update the database
-const resetSessionToken = async () => {
-  let session = await TriviaSession.findOne();
-
-  if (!session) {
-    // If there's no session, create a new one as fallback
-    console.log("No session found, generating a new one.");
-    return await getSessionToken();
-  }
-
-  // Log the old token for comparison
-  console.log("Old token:", session.token);
-
-  // Reset the session token
+// Generate a new session token for each user
+const generateSessionToken = async () => {
   const response = await axios.get(
-    `https://opentdb.com/api_token.php?command=reset&token=${session.token}`
+    "https://opentdb.com/api_token.php?command=request"
   );
-
-  if (response.data.response_code === 0) {
-    const newToken = response.data.token || session.token; // Sometimes the token might remain the same
-
-    // Log the new token to ensure it's correctly reset
-    console.log("New token:", newToken);
-
-    // Update token in the database
-    session.token = newToken;
-    session.last_updated = new Date();
-    await session.save();
-
-    return newToken;
-  } else {
-    console.error(
-      "Failed to reset the token, response code:",
-      response.data.response_code
-    );
-    throw new Error("Unable to reset the session token.");
-  }
+  return response.data.token;
 };
 
 const fetchTriviaQuestion = async (categoryId, categoryName) => {
@@ -92,8 +39,8 @@ const fetchTriviaQuestion = async (categoryId, categoryName) => {
     let triviaQuestion;
     let source = "API"; // Default to API
 
-    // Get session token before making API call
-    let sessionToken = await getSessionToken();
+    // Generate a new session token
+    let sessionToken = await generateSessionToken();
 
     // Attempt to find a question in the database that hasn't been served recently
     triviaQuestion = await TriviaQuestion.findOne({
@@ -110,8 +57,8 @@ const fetchTriviaQuestion = async (categoryId, categoryName) => {
 
       // Check if the token is exhausted (response code 3 indicates this)
       if (response.data.response_code === 3) {
-        // Token not found
-        sessionToken = await getSessionToken(); // Create a new token
+        // Token exhausted, generate a new one
+        sessionToken = await generateSessionToken();
         // Retry fetching the question
         const retryResponse = await axios.get(
           `https://opentdb.com/api.php?amount=1&category=${categoryId}&token=${sessionToken}`
