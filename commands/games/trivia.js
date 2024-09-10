@@ -4,12 +4,14 @@ const { decode } = require("html-entities");
 const TriviaQuestion = require("../../models/TriviaQuestion");
 const Leaderboard = require("../../models/Leaderboard");
 
-// WARNING: this code is by means not perfect, and it might have questionable implementation but its still a good starting point and under development. feel free to suggest improvements.
+// WARNING: this code is by no means perfect, and it might have questionable implementation but it's still a good starting point and under development. Feel free to suggest improvements.
 
 const API_INTERVAL = 5000; // 5 seconds
 const QUESTION_EXPIRY = 30 * 24 * 60 * 60 * 1000; // 1 month
 const ACTIVE_GAMES = new Set(); // Track users with ongoing trivia
 const LAST_API_CALL = { time: 0 }; // Track last API call
+
+const USER_TOKENS = {}; // Track tokens for each user
 
 const CATEGORY_MAP = {
   15: "Video Games",
@@ -36,13 +38,14 @@ const generateSessionToken = async () => {
   return response.data.token;
 };
 
-const fetchTriviaQuestion = async (categoryId, categoryName) => {
+const fetchTriviaQuestion = async (userId, categoryId, categoryName) => {
   try {
     let triviaQuestion;
     let source = "API"; // Default to API
 
-    // Generate a new session token
-    let sessionToken = await generateSessionToken();
+    // Get or generate a session token for the user
+    let sessionToken = USER_TOKENS[userId] || (await generateSessionToken());
+    USER_TOKENS[userId] = sessionToken;
 
     // Attempt to find a question in the database that hasn't been served recently
     triviaQuestion = await TriviaQuestion.findOne({
@@ -61,6 +64,7 @@ const fetchTriviaQuestion = async (categoryId, categoryName) => {
       if (response.data.response_code === 3) {
         // Token exhausted, generate a new one
         sessionToken = await generateSessionToken();
+        USER_TOKENS[userId] = sessionToken; // Update the user's token
         // Retry fetching the question
         const retryResponse = await axios.get(
           `https://opentdb.com/api.php?amount=1&category=${categoryId}&token=${sessionToken}`
@@ -303,6 +307,7 @@ module.exports = {
       const categoryName = CATEGORY_MAP[categoryId] || "Video Games";
 
       const { triviaQuestion, source } = await fetchTriviaQuestion(
+        userId,
         categoryId,
         categoryName
       );
