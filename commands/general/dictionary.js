@@ -1,6 +1,14 @@
-const { SlashCommandBuilder } = require("discord.js");
+const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
 const Word = require("../../models/wordModel");
 const axios = require("axios");
+
+const WORDNIK_API_KEY = process.env.WORDNIK_API_KEY;
+
+// Function to clean up XML-like tags from the text
+function cleanText(text) {
+  // Ensure text is a string and remove XML-like tags
+  return (text || "").replace(/<[^>]*>/g, "");
+}
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -21,54 +29,120 @@ module.exports = {
   async execute(interaction) {
     const word = interaction.options.getString("word").toLowerCase();
     const isEphemeral = interaction.options.getBoolean("ephemeral") || false;
+    const wordnikUrl = `https://www.wordnik.com/words/${word}`;
+
+    // Create the base embed
+    const embed = new EmbedBuilder()
+      .setColor("#0099ff")
+      .setTitle(`Dictionary: ${word.charAt(0).toUpperCase() + word.slice(1)}`)
+      .setURL(wordnikUrl) // Set URL to the Wordnik page for the word
+      .setFooter({
+        text: "Powered by Wordnik | Source: Loading...",
+        iconURL: "https://wordnik.com/favicon.ico",
+      });
 
     // Try to find the word in the database
     let result = await Word.findOne({ word });
 
     if (result) {
       // If the word is found in the database
-      await interaction.reply({
-        content: `**${result.word}**: ${result.definition}`,
-        ephemeral: isEphemeral,
-      });
+      embed
+        .setDescription(
+          `**Definition:** ${cleanText(
+            result.definition || "No definition found"
+          )}\n` +
+            `**Part of Speech:** ${result.partOfSpeech || "Unknown"}\n` +
+            `**Attribution:** ${result.attributionText || "No attribution"}\n` +
+            `**Source Dictionary:** ${
+              result.sourceDictionary || "Unknown source"
+            }\n` +
+            `**Synonyms:** ${result.synonyms.join(", ") || "None found"}\n` +
+            `**Antonyms:** ${result.antonyms.join(", ") || "None found"}\n` +
+            `**Example:** ${result.exampleSentence || "No examples found"}`
+        )
+        .setURL(result.wordnikUrl || wordnikUrl)
+        .setFooter({
+          text: `Powered by Wordnik | Source: Database`,
+          iconURL: "https://wordnik.com/favicon.ico",
+        });
     } else {
-      // Fetch the word definition from an API if not found in the database
+      // Fetch the word information from Wordnik API
       try {
-        const response = await axios.get(
-          `https://api.dictionaryapi.dev/api/v2/entries/en/${word}`
+        // Fetch definitions
+        const definitionResponse = await axios.get(
+          `https://api.wordnik.com/v4/word.json/${word}/definitions`,
+          {
+            params: {
+              api_key: WORDNIK_API_KEY,
+              limit: 1,
+              includeRelated: true,
+              sourceDictionaries: "all",
+              useCanonical: true,
+              includeTags: false,
+            },
+          }
         );
-        const data = response.data;
 
-        if (
-          data &&
-          data[0] &&
-          data[0].meanings &&
-          data[0].meanings[0] &&
-          data[0].meanings[0].definitions &&
-          data[0].meanings[0].definitions[0]
-        ) {
-          const definition = data[0].meanings[0].definitions[0].definition;
+        const definitionData = definitionResponse.data[0];
+        if (definitionData) {
+          const definition = cleanText(
+            definitionData.text || "No definition found"
+          );
+          const partOfSpeech = definitionData.partOfSpeech || "Unknown";
+          const attributionText =
+            definitionData.attributionText || "No attribution";
+          const sourceDictionary =
+            definitionData.sourceDictionary || "Unknown source";
+          const wordnikUrl = definitionData.wordnikUrl || wordnikUrl;
+
+          // Example sentence extraction (make sure `exampleUses` is correctly handled)
+          const exampleSentence =
+            (definitionData.exampleUses &&
+              definitionData.exampleUses[0] &&
+              definitionData.exampleUses[0].text) ||
+            "No examples found";
 
           // Save the new word and definition in the database
-          await Word.create({ word, definition });
+          await Word.create({
+            word,
+            definition,
+            partOfSpeech,
+            attributionText,
+            sourceDictionary,
+            exampleSentence,
+            wordnikUrl,
+          });
 
-          await interaction.reply({
-            content: `**${word}**: ${definition}`,
-            ephemeral: isEphemeral,
+          embed
+            .setDescription(
+              `**Definition:** ${definition}\n` +
+                `**Part of Speech:** ${partOfSpeech}\n` +
+                `**Attribution:** ${attributionText}\n` +
+                `**Source Dictionary:** ${sourceDictionary}\n` +
+                `**Example:** ${exampleSentence}`
+            )
+            .setURL(wordnikUrl); // Add a URL to the embed if available
+
+          embed.setFooter({
+            text: `Powered by Wordnik | Source: API`,
+            iconURL: "https://wordnik.com/favicon.ico",
           });
         } else {
-          await interaction.reply({
-            content: `Sorry, I couldn't find a definition for **${word}**.`,
-            ephemeral: isEphemeral,
-          });
+          embed.setDescription(
+            `Sorry, I couldn't find a definition for **${word}**.`
+          );
         }
       } catch (error) {
-        console.error(error);
-        await interaction.reply({
-          content: `An error occurred while fetching the definition for **${word}**.`,
-          ephemeral: isEphemeral,
-        });
+        console.error("Error fetching Wordnik data:", error.message);
+        embed.setDescription(
+          `An error occurred while fetching the definition for **${word}**. ${error.message}`
+        );
       }
     }
+
+    await interaction.reply({
+      embeds: [embed],
+      ephemeral: isEphemeral,
+    });
   },
 };
