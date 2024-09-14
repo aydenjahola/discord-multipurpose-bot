@@ -29,13 +29,13 @@ module.exports = {
   async execute(interaction) {
     const word = interaction.options.getString("word").toLowerCase();
     const isEphemeral = interaction.options.getBoolean("ephemeral") || false;
-    const wordnikUrl = `https://www.wordnik.com/words/${word}`;
+    const defaultWordnikUrl = `https://www.wordnik.com/words/${word}`;
 
     // Create the base embed
     const embed = new EmbedBuilder()
       .setColor("#0099ff")
       .setTitle(`Dictionary: ${word.charAt(0).toUpperCase() + word.slice(1)}`)
-      .setURL(wordnikUrl) // Set URL to the Wordnik page for the word
+      .setURL(defaultWordnikUrl) // Set URL to the Wordnik page for the word
       .setFooter({
         text: "Powered by Wordnik | Source: Loading...",
         iconURL: "https://wordnik.com/favicon.ico",
@@ -56,11 +56,9 @@ module.exports = {
             `**Source Dictionary:** ${
               result.sourceDictionary || "Unknown source"
             }\n` +
-            `**Synonyms:** ${result.synonyms.join(", ") || "None found"}\n` +
-            `**Antonyms:** ${result.antonyms.join(", ") || "None found"}\n` +
             `**Example:** ${result.exampleSentence || "No examples found"}`
         )
-        .setURL(result.wordnikUrl || wordnikUrl)
+        .setURL(result.wordnikUrl || defaultWordnikUrl) // Use URL from database or default
         .setFooter({
           text: `Powered by Wordnik | Source: Database`,
           iconURL: "https://wordnik.com/favicon.ico",
@@ -93,7 +91,7 @@ module.exports = {
             definitionData.attributionText || "No attribution";
           const sourceDictionary =
             definitionData.sourceDictionary || "Unknown source";
-          const wordnikUrl = definitionData.wordnikUrl || wordnikUrl;
+          const wordnikUrl = definitionData.wordnikUrl || defaultWordnikUrl; // Use local URL or default
 
           // Example sentence extraction (make sure `exampleUses` is correctly handled)
           const exampleSentence =
@@ -121,12 +119,11 @@ module.exports = {
                 `**Source Dictionary:** ${sourceDictionary}\n` +
                 `**Example:** ${exampleSentence}`
             )
-            .setURL(wordnikUrl); // Add a URL to the embed if available
-
-          embed.setFooter({
-            text: `Powered by Wordnik | Source: API`,
-            iconURL: "https://wordnik.com/favicon.ico",
-          });
+            .setURL(wordnikUrl) // Use URL from API response
+            .setFooter({
+              text: `Powered by Wordnik | Source: API`,
+              iconURL: "https://wordnik.com/favicon.ico",
+            });
         } else {
           embed.setDescription(
             `Sorry, I couldn't find a definition for **${word}**.`

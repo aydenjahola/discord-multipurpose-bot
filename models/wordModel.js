@@ -6,8 +6,6 @@ const wordSchema = new mongoose.Schema({
   partOfSpeech: { type: String, default: "Unknown" },
   attributionText: { type: String, default: "No attribution" },
   sourceDictionary: { type: String, default: "Unknown source" },
-  synonyms: { type: [String], default: [] },
-  antonyms: { type: [String], default: [] },
   exampleSentence: { type: String, default: "No examples found" },
   wordnikUrl: { type: String, default: "" },
   attributionUrl: { type: String, default: "" },
