@@ -276,9 +276,10 @@ module.exports = {
     .addStringOption((option) =>
       option
         .setName("category")
-        .setDescription("Choose a trivia category")
+        .setDescription("Choose a trivia category or random")
         .setRequired(true)
         .addChoices(
+          { name: "Random", value: "random" },
           ...Object.entries(CATEGORY_MAP).map(([value, name]) => ({
             name,
             value,
@@ -303,8 +304,19 @@ module.exports = {
     ACTIVE_GAMES.add(userId);
 
     try {
-      const categoryId = interaction.options.getString("category");
-      const categoryName = CATEGORY_MAP[categoryId] || "Video Games";
+      let categoryId = interaction.options.getString("category");
+      let categoryName;
+
+      if (categoryId === "random") {
+        // Choose a random category from CATEGORY_MAP
+        const categoryKeys = Object.keys(CATEGORY_MAP);
+        const randomKey =
+          categoryKeys[Math.floor(Math.random() * categoryKeys.length)];
+        categoryId = randomKey; // This is now valid
+        categoryName = CATEGORY_MAP[randomKey];
+      } else {
+        categoryName = CATEGORY_MAP[categoryId] || "Video Games";
+      }
 
       const { triviaQuestion, source } = await fetchTriviaQuestion(
         userId,
