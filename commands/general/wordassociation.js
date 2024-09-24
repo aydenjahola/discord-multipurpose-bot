@@ -54,7 +54,7 @@ const getAssociatedWords = async (word) => {
   }
 };
 
-const createWordAssociationEmbed = (word, associatedWords) => {
+const createWordAssociationEmbed = (word, associatedWords, guild) => {
   return new EmbedBuilder()
     .setColor("#0099ff")
     .setTitle("Word Association")
@@ -66,7 +66,11 @@ const createWordAssociationEmbed = (word, associatedWords) => {
         inline: true,
       }))
     )
-    .setTimestamp();
+    .setTimestamp()
+    .setFooter({
+      text: `${guild.name}`,
+      iconURL: guild.iconURL(),
+    });
 };
 
 module.exports = {
@@ -95,7 +99,8 @@ module.exports = {
 
       const wordAssociationEmbed = createWordAssociationEmbed(
         word,
-        associatedWords
+        associatedWords,
+        interaction.guild
       );
 
       await interaction.reply({ embeds: [wordAssociationEmbed] });
