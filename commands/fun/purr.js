@@ -35,7 +35,7 @@ module.exports = {
           { name: "Tickle (GIF)", value: "img/sfw/tickle/gif" },
 
           // Image endpoints (randomly chosen)
-          { name: "Background (IMG)", value: "img/sfw/background/img" },
+          { name: "Shiro (IMG)", value: "img/sfw/shiro/img" },
           { name: "Holo (IMG)", value: "img/sfw/holo/img" },
           { name: "Kitsune (IMG)", value: "img/sfw/kitsune/img" },
           { name: "Senko (IMG)", value: "img/sfw/senko/img" }
