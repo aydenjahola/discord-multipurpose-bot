@@ -87,7 +87,11 @@ module.exports = {
           },
           { name: "📧 Email Domains", value: emailDomains, inline: true }
         )
-        .setTimestamp();
+        .setTimestamp()
+        .setFooter({
+          text: interaction.guild.name,
+          iconURL: interaction.guild.iconURL(),
+        });
 
       await interaction.reply({ embeds: [settingsEmbed], ephemeral: false });
     } catch (error) {
