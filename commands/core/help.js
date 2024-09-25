@@ -21,34 +21,45 @@ module.exports = {
       const helpEmbed = new EmbedBuilder()
         .setColor("#0099ff")
         .setTitle("Available Commands")
-        .setDescription("Here are all the available commands:")
+        .setDescription(
+          "This bot comes from an Open Source project developed by [Ayden](https://github.com/aydenjahola/discord-multipurpose-bot)\n\nHere are all the available commands:"
+        )
         .setTimestamp()
         .setFooter({
-          text: `${serverName}`,
+          text: `${serverName} || Made with ❤️ by Ayden`,
           iconURL: client.user.displayAvatarURL(),
         });
 
-      // Add general commands
+      // Group commands into general and mod-only
+      const generalCommands = [];
+      const modCommands = [];
+
       client.commands.forEach((command) => {
+        const commandLine = `/${command.data.name} - ${command.data.description}`;
         if (!command.isModOnly) {
-          helpEmbed.addFields({
-            name: `/${command.data.name}`,
-            value: command.data.description,
-            inline: false,
-          });
+          generalCommands.push(commandLine);
+        } else if (isMod) {
+          modCommands.push(`${commandLine} (Mods only)`);
         }
       });
 
-      // Add mod-only commands if the user is a mod
+      helpEmbed.addFields({
+        name: `General Commands (${generalCommands.length} available)`,
+        value:
+          generalCommands.length > 0
+            ? generalCommands.join("\n")
+            : "No general commands available.",
+        inline: false,
+      });
+
       if (isMod) {
-        client.commands.forEach((command) => {
-          if (command.isModOnly) {
-            helpEmbed.addFields({
-              name: `/${command.data.name}`,
-              value: command.data.description + " (Mods only)",
-              inline: false,
-            });
-          }
+        helpEmbed.addFields({
+          name: `Mod-Only Commands (${modCommands.length} available)`,
+          value:
+            modCommands.length > 0
+              ? modCommands.join("\n")
+              : "No mod-only commands available.",
+          inline: false,
         });
       }
 
