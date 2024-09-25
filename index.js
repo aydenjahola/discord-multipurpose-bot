@@ -9,6 +9,7 @@ const {
 const mongoose = require("mongoose");
 const fs = require("fs");
 const path = require("path");
+const ServerSettings = require("./models/ServerSettings");
 
 const client = new Client({
   intents: [
@@ -17,8 +18,6 @@ const client = new Client({
     GatewayIntentBits.MessageContent,
   ],
 });
-
-const GUILD_ID = process.env.GUILD_ID;
 
 client.commands = new Collection();
 
@@ -63,7 +62,17 @@ client.once("ready", async () => {
 
   const rest = new REST({ version: "10" }).setToken(process.env.BOT_TOKEN);
 
+  // Fetching the guild ID from MongoDB
+  let GUILD_ID;
   try {
+    const serverSettings = await ServerSettings.findOne();
+    if (serverSettings) {
+      GUILD_ID = serverSettings.guildId;
+    } else {
+      console.error("No server settings found in MongoDB.");
+      return;
+    }
+
     await rest.put(Routes.applicationGuildCommands(client.user.id, GUILD_ID), {
       body: commands,
     });
