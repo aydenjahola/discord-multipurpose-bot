@@ -1,11 +1,12 @@
 const { SlashCommandBuilder } = require("discord.js");
 const nodemailer = require("nodemailer");
 const VerificationCode = require("../../models/VerificationCode");
+const ServerSettings = require("../../models/ServerSettings");
 
 const transporter = nodemailer.createTransport({
   service: "Gmail",
   auth: {
-    user: process.env.EMAIL_USER,
+    user: process.env.EMAIL_USER, // Email user and pass still from .env (for now)
     pass: process.env.EMAIL_PASS,
   },
 });
@@ -22,27 +23,41 @@ module.exports = {
     ),
 
   async execute(interaction, client) {
-    // Ensure command is only used in the specified verification channel
-    const verificationChannelName = process.env.VERIFICATION_CHANNEL_NAME;
-    if (interaction.channel.name !== verificationChannelName) {
+    // Fetch the server settings from the database using guild ID
+    const serverSettings = await ServerSettings.findOne({
+      guildId: interaction.guild.id,
+    });
+
+    if (!serverSettings) {
       return interaction.reply({
-        content: `This command can only be used in the #${verificationChannelName} channel.`,
+        content:
+          "Server settings have not been configured yet. Please contact an administrator.",
+        ephemeral: true,
+      });
+    }
+
+    // Ensure command is only used in the specified verification channel
+    const verificationChannelId = serverSettings.verificationChannelId;
+    if (interaction.channel.id !== verificationChannelId) {
+      return interaction.reply({
+        content: `This command can only be used in <#${verificationChannelId}> channel.`,
         ephemeral: true,
       });
     }
 
     const email = interaction.options.getString("email");
     const emailDomain = email.split("@")[1];
-    const EMAIL_DOMAINS = process.env.EMAIL_DOMAINS.split(",");
+    const allowedEmailDomains = serverSettings.emailDomains;
 
-    if (!EMAIL_DOMAINS.includes(emailDomain)) {
+    // Check if the email domain is allowed
+    if (!allowedEmailDomains.includes(emailDomain)) {
       return interaction.reply({
         content: "You must use a valid DCU email address.",
         ephemeral: true,
       });
     }
 
-    const guild = client.guilds.cache.get(process.env.GUILD_ID);
+    const guild = client.guilds.cache.get(interaction.guild.id);
 
     if (!guild) {
       console.error("Guild not found.");
@@ -63,13 +78,13 @@ module.exports = {
     }
 
     const role = guild.roles.cache.find(
-      (r) => r.name === process.env.VERIFIED_ROLE_NAME
+      (r) => r.name === serverSettings.verifiedRoleName
     );
 
     if (!role) {
-      console.error(`Role "${process.env.VERIFIED_ROLE_NAME}" not found.`);
+      console.error(`Role "${serverSettings.verifiedRoleName}" not found.`);
       return interaction.reply({
-        content: `Role "${process.env.VERIFIED_ROLE_NAME}" not found.`,
+        content: `Role "${serverSettings.verifiedRoleName}" not found.`,
         ephemeral: true,
       });
     }
@@ -81,6 +96,7 @@ module.exports = {
       });
     }
 
+    // Generate a 6-digit verification code
     const verificationCode = Math.floor(
       100000 + Math.random() * 900000
     ).toString();
@@ -102,6 +118,7 @@ module.exports = {
     `;
 
     try {
+      // Send the verification email
       await transporter.sendMail({
         from: `"${process.env.EMAIL_NAME}" <${process.env.EMAIL_USER}>`,
         to: email,
@@ -109,6 +126,7 @@ module.exports = {
         html: emailHtml,
       });
 
+      // Save the verification code and email in the database
       await VerificationCode.create({
         userId: interaction.user.id,
         email: email,

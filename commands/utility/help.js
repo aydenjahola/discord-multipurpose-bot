@@ -1,4 +1,8 @@
-const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
+const {
+  SlashCommandBuilder,
+  EmbedBuilder,
+  PermissionsBitField,
+} = require("discord.js");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -7,8 +11,10 @@ module.exports = {
 
   async execute(interaction, client) {
     try {
-      const modRoleId = process.env.MOD_ROLE_ID;
-      const isMod = interaction.member.roles.cache.has(modRoleId);
+      // Check if the user has the Manage Roles permission
+      const isMod = interaction.member.permissions.has(
+        PermissionsBitField.Flags.ManageRoles
+      );
 
       const serverName = interaction.guild.name;
 

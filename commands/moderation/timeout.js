@@ -33,10 +33,14 @@ module.exports = {
     let replySent = false;
 
     try {
-      const requiredRoleId = process.env.MOD_ROLE_ID;
-      if (!interaction.member.roles.cache.has(requiredRoleId)) {
+      // Check if the user has the Manage Roles permission
+      if (
+        !interaction.member.permissions.has(
+          PermissionsBitField.Flags.ManageRoles
+        )
+      ) {
         await interaction.reply({
-          content: "You do not have the required role to use this command!",
+          content: "You do not have permission to use this command!",
           ephemeral: true,
         });
         replySent = true;
@@ -98,6 +102,8 @@ module.exports = {
           color: "#ff0000",
           permissions: [],
         });
+
+        // Disable send messages permission for the timeout role in all channels
         interaction.guild.channels.cache.each(async (channel) => {
           await channel.permissionOverwrites.edit(timeoutRole, {
             SendMessages: false,
@@ -153,7 +159,7 @@ module.exports = {
         replySent = true;
       }
 
-      // log the timeout in a designated channel
+      // Log the timeout in a designated channel
       const logChannelId = process.env.LOG_CHANNEL_ID;
       const logChannel = interaction.guild.channels.cache.get(logChannelId);
 

@@ -36,9 +36,10 @@ module.exports = {
       await interaction.reply({ embeds: [embed] });
     } catch (error) {
       console.error(error);
-      await interaction.reply(
-        "There was an error trying to fetch a random activity."
-      );
+      await interaction.reply({
+        content: "There was an error trying to fetch a random activity.",
+        epemeral: true,
+      });
     }
   },
 };

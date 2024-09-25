@@ -21,10 +21,10 @@ module.exports = {
 
   async execute(interaction) {
     try {
-      const requiredRoleId = process.env.MOD_ROLE_ID;
-      if (!interaction.member.roles.cache.has(requiredRoleId)) {
+      // Check if the user has the Kick Members permission
+      if (!interaction.member.permissions.has("KickMembers")) {
         await interaction.reply({
-          content: "You do not have the required role to use this command!",
+          content: "You do not have permission to use this command!",
           ephemeral: true,
         });
         return;
@@ -77,8 +77,7 @@ module.exports = {
         });
       } catch (dmError) {
         console.error(`Error sending DM to ${user.tag}:`, dmError);
-        // If DM fails, make sure to handle it properly
-        // Avoid using followUp here if interaction has already been replied to
+        // Handle DM errors appropriately, if needed
       }
 
       const kickEmbed = new EmbedBuilder()
@@ -99,7 +98,7 @@ module.exports = {
         ephemeral: true,
       });
 
-      // log the kick in a designated channel
+      // Log the kick in a designated channel
       const logChannelId = process.env.LOG_CHANNEL_ID;
       const logChannel = interaction.guild.channels.cache.get(logChannelId);
 

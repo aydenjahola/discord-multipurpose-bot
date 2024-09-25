@@ -1,4 +1,8 @@
-const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
+const {
+  SlashCommandBuilder,
+  EmbedBuilder,
+  PermissionFlagsBits,
+} = require("discord.js");
 const BannedUser = require("../../models/BannedUser");
 
 module.exports = {
@@ -20,10 +24,10 @@ module.exports = {
     let replySent = false;
 
     try {
-      const requiredRoleId = process.env.MOD_ROLE_ID;
-      if (!interaction.member.roles.cache.has(requiredRoleId)) {
+      // Check if the user has the Ban Members permission
+      if (!interaction.member.permissions.has(PermissionFlagsBits.BanMembers)) {
         await interaction.reply({
-          content: "You do not have the required role to use this command!",
+          content: "You do not have permission to use this command!",
           ephemeral: true,
         });
         replySent = true;
@@ -101,7 +105,7 @@ module.exports = {
           iconURL: interaction.user.displayAvatarURL(),
         });
 
-      // Send confirmation as ephemeral message
+      // Send confirmation as an ephemeral message
       if (!replySent) {
         await interaction.reply({
           embeds: [banEmbed],
@@ -110,7 +114,7 @@ module.exports = {
         replySent = true;
       }
 
-      // log the ban in a designated channel
+      // Log the ban in a designated channel
       const logChannelId = process.env.LOG_CHANNEL_ID;
       const logChannel = interaction.guild.channels.cache.get(logChannelId);
 

@@ -1,5 +1,6 @@
 const { SlashCommandBuilder } = require("discord.js");
 const VerificationCode = require("../../models/VerificationCode");
+const ServerSettings = require("../../models/ServerSettings");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -13,11 +14,24 @@ module.exports = {
     ),
 
   async execute(interaction, client) {
-    // Ensure command is only used in the specified verification channel
-    const verificationChannelName = process.env.VERIFICATION_CHANNEL_NAME;
-    if (interaction.channel.name !== verificationChannelName) {
+    // Fetch server settings from the database
+    const serverSettings = await ServerSettings.findOne({
+      guildId: interaction.guild.id,
+    });
+
+    if (!serverSettings) {
       return interaction.reply({
-        content: `This command can only be used in the #${verificationChannelName} channel.`,
+        content:
+          "Server settings have not been configured yet. Please contact an administrator.",
+        ephemeral: true,
+      });
+    }
+
+    // Ensure command is only used in the specified verification channel
+    const verificationChannelId = serverSettings.verificationChannelId;
+    if (interaction.channel.id !== verificationChannelId) {
+      return interaction.reply({
+        content: `This command can only be used in <#${verificationChannelId}> channel.`,
         ephemeral: true,
       });
     }
@@ -33,6 +47,7 @@ module.exports = {
     }
 
     try {
+      // Find the verification code in the database
       const verificationEntry = await VerificationCode.findOne({
         userId: interaction.user.id,
         code,
@@ -45,7 +60,7 @@ module.exports = {
         });
       }
 
-      const guild = client.guilds.cache.get(process.env.GUILD_ID);
+      const guild = client.guilds.cache.get(interaction.guild.id);
 
       if (!guild) {
         console.error("Guild not found.");
@@ -66,13 +81,13 @@ module.exports = {
       }
 
       const role = guild.roles.cache.find(
-        (r) => r.name === process.env.VERIFIED_ROLE_NAME
+        (r) => r.name === serverSettings.verifiedRoleName
       );
 
       if (!role) {
-        console.error(`Role "${process.env.VERIFIED_ROLE_NAME}" not found.`);
+        console.error(`Role "${serverSettings.verifiedRoleName}" not found.`);
         return interaction.reply({
-          content: `The role "${process.env.VERIFIED_ROLE_NAME}" could not be found.`,
+          content: `The role "${serverSettings.verifiedRoleName}" could not be found.`,
           ephemeral: true,
         });
       }
@@ -89,9 +104,9 @@ module.exports = {
       // Delete the verification code entry
       await VerificationCode.deleteOne({ userId: interaction.user.id, code });
 
-      // Get the admin log channel and send a log message
+      // Get the log channel and send a log message
       const adminLogChannel = client.channels.cache.get(
-        process.env.LOG_CHANNEL_ID
+        serverSettings.logChannelId
       );
       if (adminLogChannel) {
         await adminLogChannel.send({
@@ -103,7 +118,7 @@ module.exports = {
 
       // Get the general channel and send a welcome message
       const generalChannel = client.channels.cache.get(
-        process.env.GENERAL_CHANNEL_ID
+        serverSettings.generalChannelId
       );
       if (generalChannel) {
         await generalChannel.send({

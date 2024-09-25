@@ -1,4 +1,8 @@
-const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
+const {
+  SlashCommandBuilder,
+  EmbedBuilder,
+  PermissionsBitField,
+} = require("discord.js");
 const Warning = require("../../models/warning");
 
 module.exports = {
@@ -21,10 +25,14 @@ module.exports = {
 
   async execute(interaction) {
     try {
-      const requiredRoleId = process.env.MOD_ROLE_ID;
-      if (!interaction.member.roles.cache.has(requiredRoleId)) {
+      // Check if the user has the Manage Roles permission
+      if (
+        !interaction.member.permissions.has(
+          PermissionsBitField.Flags.ManageRoles
+        )
+      ) {
         await interaction.reply({
-          content: "You do not have the required role to use this command!",
+          content: "You do not have permission to use this command!",
           ephemeral: true,
         });
         return;
