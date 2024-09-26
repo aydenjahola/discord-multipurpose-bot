@@ -23,7 +23,7 @@ const CATEGORY_MAP = {
   11: "Film",
   14: "Television",
   28: "Vehicles",
-  13: "Mathematics",
+  13: "Science: Mathematics",
   21: "Sports",
   26: "Celebrities",
   9: "General Knowledge",
