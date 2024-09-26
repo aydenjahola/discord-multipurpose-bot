@@ -1,4 +1,8 @@
-const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
+const {
+  SlashCommandBuilder,
+  EmbedBuilder,
+  PermissionFlagsBits,
+} = require("discord.js");
 const KickedUser = require("../../models/KickedUser");
 
 module.exports = {
@@ -22,7 +26,9 @@ module.exports = {
   async execute(interaction) {
     try {
       // Check if the user has the Kick Members permission
-      if (!interaction.member.permissions.has("KickMembers")) {
+      if (
+        !interaction.member.permissions.has(PermissionFlagsBits.KickMembers)
+      ) {
         await interaction.reply({
           content: "You do not have permission to use this command!",
           ephemeral: true,

@@ -1,4 +1,8 @@
-const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
+const {
+  SlashCommandBuilder,
+  EmbedBuilder,
+  PermissionFlagsBits,
+} = require("discord.js");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -27,7 +31,9 @@ module.exports = {
   async execute(interaction) {
     try {
       // Check if the user has the Manage Messages permission
-      if (!interaction.member.permissions.has("ManageMessages")) {
+      if (
+        !interaction.member.permissions.has(PermissionFlagsBits.ManageMessages)
+      ) {
         await interaction.reply({
           content: "You do not have permission to use this command!",
           ephemeral: true,

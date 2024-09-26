@@ -1,4 +1,4 @@
-const { SlashCommandBuilder } = require("discord.js");
+const { SlashCommandBuilder, PermissionFlagsBits } = require("discord.js");
 const Leaderboard = require("../../models/Leaderboard");
 
 module.exports = {
@@ -10,7 +10,9 @@ module.exports = {
   async execute(interaction) {
     try {
       // Check if the user has the Manage Server permission
-      if (!interaction.member.permissions.has("ManageGuild")) {
+      if (
+        !interaction.member.permissions.has(PermissionFlagsBits.ManageGuild)
+      ) {
         await interaction.reply({
           content: "You do not have permission to use this command!",
           ephemeral: true,
