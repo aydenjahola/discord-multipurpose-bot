@@ -33,6 +33,8 @@ const CATEGORY_MAP = {
   23: "History",
   22: "Geography",
   20: "Mythology",
+  30: "Science: Gadgets",
+  25: "Art",
 };
 
 // Generate a new session token for each user
