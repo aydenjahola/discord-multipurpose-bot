@@ -26,7 +26,7 @@ module.exports = {
         )
         .setTimestamp()
         .setFooter({
-          text: `${serverName} || Made with ❤️ by Ayden`,
+          text: `${serverName} | Made with ❤️ by Ayden`,
           iconURL: client.user.displayAvatarURL(),
         });
 

@@ -47,7 +47,7 @@ module.exports = {
     }
 
     try {
-      // Find the verification code in the database
+      // Find the verification code and user email in the database
       const verificationEntry = await VerificationCode.findOne({
         userId: interaction.user.id,
         code,
@@ -104,13 +104,13 @@ module.exports = {
       // Delete the verification code entry
       await VerificationCode.deleteOne({ userId: interaction.user.id, code });
 
-      // Get the log channel and send a log message
+      // Get the log channel and send a log message, including the user's email
       const adminLogChannel = client.channels.cache.get(
         serverSettings.logChannelId
       );
       if (adminLogChannel) {
         await adminLogChannel.send({
-          content: `🎉 **Verification Success**\nUser: <@${interaction.user.id}> (${interaction.user.tag})\nRole: ${role.name}`,
+          content: `🎉 **Verification Success**\nUser: <@${interaction.user.id}> (${interaction.user.tag})\nEmail: ${verificationEntry.email}\nRole: ${role.name}`,
         });
       } else {
         console.error("Admin log channel not found.");
