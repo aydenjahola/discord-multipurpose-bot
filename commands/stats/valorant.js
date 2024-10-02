@@ -47,6 +47,7 @@ module.exports = {
       const statsEmbed = new EmbedBuilder()
         .setColor("#0099ff")
         .setTitle(`${data.username}'s Valorant Stats`)
+        .setDescription(`${data.username}'s **${data.season}** stats`)
         .addFields(
           {
             name: "🏆 Current Rank",
@@ -56,12 +57,20 @@ module.exports = {
             name: "🔝 Peak Rank",
             value: data.peak_rank,
           },
-          { name: "⚔️ Kills", value: `${data.kills}` },
-          { name: "🏅 Wins", value: `${data.wins}` },
+          {
+            name: "⏳ Hours Played",
+            value: `${data.hours_played}h`,
+          },
           {
             name: "🎮 Matches Played",
             value: `${data.matches_played}`,
           },
+          { name: "🏅 Wins", value: `${data.wins}` },
+          {
+            name: "📊 Win Percentage",
+            value: `${data.win_percentage}%`,
+          },
+          { name: "⚔️ Kills", value: `${data.kills}` },
           {
             name: "📈 K/D Ratio",
             value: `${data.kd_ratio}`,
@@ -71,13 +80,13 @@ module.exports = {
             value: `${data.headshot_percentage}%`,
           },
           {
-            name: "📊 Win Percentage",
-            value: `${data.win_percentage}%`,
+            name: "💯 Tracker Score",
+            value: `${data.tracker_score}/1000`,
           }
         )
         .setTimestamp()
         .setFooter({
-          text: "Valorant Stats Bot made by Ayden",
+          text: "Valorant Stats API made by Ayden",
           iconURL: interaction.guild.iconURL(),
         });
 
