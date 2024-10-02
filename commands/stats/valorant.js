@@ -29,9 +29,10 @@ module.exports = {
 
     // Convert the username by replacing "#" with "%23"
     const formattedUsername = username.replace("#", "%23");
+    const apiKeyUrl = process.env.VALORANT_API_URL;
     const apiKey = process.env.VALORANT_API_KEY;
 
-    const url = `https://val-api.aydenjahola.com/player/${formattedUsername}/${statsType}`;
+    const url = `https://${apiKeyUrl}/player/${formattedUsername}/${statsType}`;
 
     try {
       await interaction.deferReply();
