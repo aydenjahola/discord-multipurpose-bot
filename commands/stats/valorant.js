@@ -56,7 +56,7 @@ module.exports = {
           },
           {
             name: "🔝 Peak Rank",
-            value: data.peak_rank,
+            value: `${data.peak_rank} (${data.peak_rank_episode})`,
           },
           {
             name: "⏳ Hours Played",
