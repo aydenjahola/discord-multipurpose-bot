@@ -48,7 +48,6 @@ module.exports = {
         .setColor("#0099ff")
         .setTitle(`${data.username}'s Valorant Stats`)
         .addFields(
-          { name: "💻 Platform", value: data.platform },
           {
             name: "🏆 Current Rank",
             value: data.current_rank,
