@@ -79,17 +79,21 @@ module.exports = {
           {
             name: "🎯 Headshot Percentage",
             value: `${data.headshot_percentage}%`,
-          },
-          {
-            name: "💯 Tracker Score",
-            value: `${data.tracker_score}/1000`,
           }
-        )
-        .setTimestamp()
-        .setFooter({
-          text: "Valorant Stats API made by Ayden",
-          iconURL: interaction.guild.iconURL(),
+        );
+
+      // Add the Tracker Score field only if statsType is "current"
+      if (statsType === "current") {
+        statsEmbed.addFields({
+          name: "💯 Tracker Score",
+          value: `${data.tracker_score}/1000`,
         });
+      }
+
+      statsEmbed.setTimestamp().setFooter({
+        text: "Valorant Stats API made by Ayden",
+        iconURL: interaction.guild.iconURL(),
+      });
 
       return interaction.editReply({ embeds: [statsEmbed] });
     } catch (error) {
