@@ -77,6 +77,10 @@ module.exports = {
             value: `${data.kd_ratio}`,
           },
           {
+            name: "📊 ACS",
+            value: `${data.acs}`,
+          },
+          {
             name: "🎯 Headshot Percentage",
             value: `${data.headshot_percentage}%`,
           }
