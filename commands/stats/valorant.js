@@ -32,7 +32,7 @@ module.exports = {
     const apiKeyUrl = process.env.VALORANT_API_URL;
     const apiKey = process.env.VALORANT_API_KEY;
 
-    const url = `https://${apiKeyUrl}/player/${formattedUsername}/${statsType}`;
+    const url = `https://${apiKeyUrl}/valorant/player/${formattedUsername}/${statsType}`;
 
     try {
       await interaction.deferReply();
