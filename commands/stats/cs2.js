@@ -11,6 +11,7 @@ module.exports = {
         .setDescription("The Steam ID to fetch stats for.")
         .setRequired(true)
     ),
+
   async execute(interaction) {
     const steamId = interaction.options.getString("steam_id");
 
