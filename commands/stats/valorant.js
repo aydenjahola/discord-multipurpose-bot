@@ -29,10 +29,11 @@ module.exports = {
 
     // Convert the username by replacing "#" with "%23"
     const formattedUsername = username.replace("#", "%23");
-    const apiKeyUrl = process.env.TRACKER_API_URL;
+
+    const apiUrl = process.env.TRACKER_API_URL;
     const apiKey = process.env.TRACKER_API_KEY;
 
-    const url = `https://${apiKeyUrl}/valorant/player/${formattedUsername}/${statsType}`;
+    const url = `https://${apiUrl}/valorant/player/${formattedUsername}/${statsType}`;
 
     try {
       await interaction.deferReply();
