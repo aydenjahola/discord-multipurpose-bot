@@ -55,6 +55,7 @@ module.exports = {
       };
 
       const fields = [
+        { name: "🎮 Steam Name", value: data.player_name },
         rankField,
         {
           name: "⏳ Hours Played",
