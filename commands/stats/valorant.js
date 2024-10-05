@@ -22,10 +22,31 @@ module.exports = {
           { name: "All Acts Stats", value: "all" }
         )
         .setRequired(true)
+    )
+    .addBooleanOption((option) =>
+      option
+        .setName("include_weapons")
+        .setDescription("Include top weapons stats?")
+        .setRequired(false)
+    )
+    .addBooleanOption((option) =>
+      option
+        .setName("include_maps")
+        .setDescription("Include top maps stats?")
+        .setRequired(false)
+    )
+    .addBooleanOption((option) =>
+      option
+        .setName("include_roles")
+        .setDescription("Include roles stats?")
+        .setRequired(false)
     ),
   async execute(interaction) {
     const username = interaction.options.getString("username");
     const statsType = interaction.options.getString("stats_type");
+    const includeWeapons = interaction.options.getBoolean("include_weapons");
+    const includeMaps = interaction.options.getBoolean("include_maps");
+    const includeRoles = interaction.options.getBoolean("include_roles");
 
     // Convert the username by replacing "#" with "%23"
     const formattedUsername = username.replace("#", "%23");
@@ -55,37 +76,37 @@ module.exports = {
         .addFields(
           {
             name: "🏆 Current Rank",
-            value: data.current_rank || "N/A",
+            value: data.current_rank,
           },
           {
             name: "🔝 Peak Rank",
-            value: `${data.peak_rank || "N/A"}`,
+            value: `${data.peak_rank} (${data.peak_rank_episode})`,
           },
           {
             name: "⏳ Hours Played",
-            value: `${data.playtime_hours || 0}h`,
+            value: `${data.playtime_hours}h`,
           },
           {
             name: "🎮 Matches Played",
-            value: `${data.matches_played || 0}`,
+            value: `${data.matches_played}`,
           },
-          { name: "🏅 Wins", value: `${data.wins || 0}` },
+          { name: "🏅 Wins", value: `${data.wins}` },
           {
             name: "📊 Win Percentage",
-            value: `${data.win_percentage || 0}%`,
+            value: `${data.win_percentage}%`,
           },
-          { name: "⚔️ Kills", value: `${data.kills || 0}` },
+          { name: "⚔️ Kills", value: `${data.kills}` },
           {
             name: "📈 K/D Ratio",
-            value: `${data.kd_ratio || 0}`,
+            value: `${data.kd_ratio}`,
           },
           {
             name: "📊 ACS",
-            value: `${data.acs || 0}`,
+            value: `${data.acs}`,
           },
           {
             name: "🎯 Headshot Percentage",
-            value: `${data.headshot_percentage || 0}%`,
+            value: `${data.headshot_percentage}%`,
           }
         );
 
@@ -93,67 +114,82 @@ module.exports = {
       if (statsType === "current") {
         statsEmbed.addFields({
           name: "💯 Tracker Score",
-          value: `${data.tracker_score || "N/A"}/1000`,
+          value: `${data.tracker_score}/1000`,
         });
       }
 
-      const weaponsEmbed = new EmbedBuilder()
-        .setColor("#0099ff")
-        .setTitle(`${data.username}'s Top Weapons`)
-        .setDescription(`${data.username}'s top weapons stats:`);
+      const embeds = [statsEmbed];
 
-      data.top_weapons.forEach((weapon) => {
-        weaponsEmbed.addFields({
-          name: weapon.name,
-          value:
-            `Type: ${weapon.weapon_type}\n` +
-            `Kills: ${weapon.kills}\n` +
-            `Accuracy: ${weapon.accuracy.join(", ")}\n`,
-          inline: true,
+      // Optional weapons embed
+      if (includeWeapons) {
+        const weaponsEmbed = new EmbedBuilder()
+          .setColor("#0099ff")
+          .setTitle(`${data.username}'s Top Weapons`)
+          .setDescription(`${data.username}'s top weapons stats:`);
+
+        data.top_weapons.forEach((weapon) => {
+          weaponsEmbed.addFields({
+            name: weapon.name,
+            value:
+              `Type: ${weapon.weapon_type}\n` +
+              `Kills: ${weapon.kills}\n` +
+              `Accuracy: ${weapon.accuracy.join(", ")}\n`,
+            inline: true,
+          });
         });
-      });
 
-      const mapsEmbed = new EmbedBuilder()
-        .setColor("#0099ff")
-        .setTitle(`${data.username}'s Top Maps`)
-        .setDescription(`${data.username}'s top maps stats:`);
+        embeds.push(weaponsEmbed);
+      }
 
-      data.top_maps.forEach((map) => {
-        mapsEmbed.addFields({
-          name: map.name,
-          value: `Win Percentage: ${map.win_percentage}%\nMatches: ${map.matches}`,
-          inline: true,
+      // Optional maps embed
+      if (includeMaps) {
+        const mapsEmbed = new EmbedBuilder()
+          .setColor("#0099ff")
+          .setTitle(`${data.username}'s Top Maps`)
+          .setDescription(`${data.username}'s top maps stats:`);
+
+        data.top_maps.forEach((map) => {
+          mapsEmbed.addFields({
+            name: map.name,
+            value: `Win Percentage: ${map.win_percentage}%\nMatches: ${map.matches}`,
+            inline: true,
+          });
         });
-      });
 
-      const rolesEmbed = new EmbedBuilder()
-        .setColor("#0099ff")
-        .setTitle(`${data.username}'s Roles`)
-        .setDescription(`${data.username}'s performance by role:`);
+        embeds.push(mapsEmbed);
+      }
 
-      data.roles.forEach((role) => {
-        rolesEmbed.addFields({
-          name: role.name,
-          value:
-            `Win Rate: ${role.win_rate}%\n` +
-            `KDA: ${role.kda}\n` +
-            `Wins: ${role.wins}\n` +
-            `Losses: ${role.losses}\n` +
-            `Kills: ${role.kills}\n` +
-            `Deaths: ${role.deaths}\n` +
-            `Assists: ${role.assists}`,
-          inline: true,
+      // Optional roles embed
+      if (includeRoles) {
+        const rolesEmbed = new EmbedBuilder()
+          .setColor("#0099ff")
+          .setTitle(`${data.username}'s Roles`)
+          .setDescription(`${data.username}'s performance by role:`);
+
+        data.roles.forEach((role) => {
+          rolesEmbed.addFields({
+            name: role.name,
+            value:
+              `Win Rate: ${role.win_rate}%\n` +
+              `KDA: ${role.kda}\n` +
+              `Wins: ${role.wins}\n` +
+              `Losses: ${role.losses}\n` +
+              `Kills: ${role.kills}\n` +
+              `Deaths: ${role.deaths}\n` +
+              `Assists: ${role.assists}`,
+            inline: true,
+          });
         });
-      });
+
+        embeds.push(rolesEmbed);
+      }
 
       statsEmbed.setTimestamp().setFooter({
         text: "Valorant Stats API made by Ayden",
         iconURL: interaction.guild.iconURL(),
       });
 
-      return interaction.editReply({
-        embeds: [statsEmbed, weaponsEmbed, mapsEmbed, rolesEmbed],
-      });
+      return interaction.editReply({ embeds });
     } catch (error) {
       console.error("Error fetching player stats:", error);
       if (error.response) {
