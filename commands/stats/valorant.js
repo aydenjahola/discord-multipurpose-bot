@@ -42,11 +42,14 @@ module.exports = {
         .setRequired(false)
     ),
   async execute(interaction) {
+    // Immediately defer the reply
+    await interaction.deferReply();
+
     const username = interaction.options.getString("username");
 
     // Check if username contains '#'
     if (!username.includes("#")) {
-      return interaction.followUp({
+      return interaction.editReply({
         content:
           "Error: Please include your tag in the username (e.g., Shitter#1234).",
         ephemeral: true,
@@ -68,8 +71,6 @@ module.exports = {
     const url = `https://${apiUrl}/valorant/player/${formattedUsername}/${statsType}`;
 
     try {
-      await interaction.deferReply();
-
       const response = await axios.get(url, {
         headers: {
           "X-API-Key": apiKey,
@@ -203,14 +204,14 @@ module.exports = {
     } catch (error) {
       console.error("Error fetching player stats:", error);
       if (error.response) {
-        return interaction.followUp({
+        return interaction.editReply({
           content: `Error: ${
             error.response.data.message || error.response.statusText
           }`,
           ephemeral: true,
         });
       } else {
-        return interaction.followUp({
+        return interaction.editReply({
           content: "An error occurred while fetching player stats.",
           ephemeral: true,
         });
