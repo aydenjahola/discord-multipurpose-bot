@@ -43,6 +43,16 @@ module.exports = {
     ),
   async execute(interaction) {
     const username = interaction.options.getString("username");
+
+    // Check if username contains '#'
+    if (!username.includes("#")) {
+      return interaction.followUp({
+        content:
+          "Error: Please include your tag in the username (e.g., Shitter#1234).",
+        ephemeral: true,
+      });
+    }
+
     const statsType = interaction.options.getString("stats_type");
     const includeWeapons = interaction.options.getBoolean("include_weapons");
     const includeMaps = interaction.options.getBoolean("include_maps");
@@ -193,13 +203,17 @@ module.exports = {
     } catch (error) {
       console.error("Error fetching player stats:", error);
       if (error.response) {
-        return interaction.editReply(
-          `Error: ${error.response.data.message || error.response.statusText}`
-        );
+        return interaction.followUp({
+          content: `Error: ${
+            error.response.data.message || error.response.statusText
+          }`,
+          ephemeral: true,
+        });
       } else {
-        return interaction.editReply(
-          "An error occurred while fetching player stats."
-        );
+        return interaction.followUp({
+          content: "An error occurred while fetching player stats.",
+          ephemeral: true,
+        });
       }
     }
   },
