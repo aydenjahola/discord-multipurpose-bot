@@ -33,6 +33,7 @@ module.exports = {
     const apiUrl = process.env.TRACKER_API_URL;
     const apiKey = process.env.TRACKER_API_KEY;
 
+    // Use statsType for the main URL
     const url = `https://${apiUrl}/valorant/player/${formattedUsername}/${statsType}`;
 
     try {
@@ -46,6 +47,7 @@ module.exports = {
 
       const data = response.data;
 
+      // Create the embed for player stats
       const statsEmbed = new EmbedBuilder()
         .setColor("#0099ff")
         .setTitle(`${data.username}'s Valorant Stats`)
@@ -53,37 +55,37 @@ module.exports = {
         .addFields(
           {
             name: "🏆 Current Rank",
-            value: data.current_rank,
+            value: data.current_rank || "N/A",
           },
           {
             name: "🔝 Peak Rank",
-            value: `${data.peak_rank} (${data.peak_rank_episode})`,
+            value: `${data.peak_rank || "N/A"}`,
           },
           {
             name: "⏳ Hours Played",
-            value: `${data.hours_played}h`,
+            value: `${data.playtime_hours || 0}h`,
           },
           {
             name: "🎮 Matches Played",
-            value: `${data.matches_played}`,
+            value: `${data.matches_played || 0}`,
           },
-          { name: "🏅 Wins", value: `${data.wins}` },
+          { name: "🏅 Wins", value: `${data.wins || 0}` },
           {
             name: "📊 Win Percentage",
-            value: `${data.win_percentage}%`,
+            value: `${data.win_percentage || 0}%`,
           },
-          { name: "⚔️ Kills", value: `${data.kills}` },
+          { name: "⚔️ Kills", value: `${data.kills || 0}` },
           {
             name: "📈 K/D Ratio",
-            value: `${data.kd_ratio}`,
+            value: `${data.kd_ratio || 0}`,
           },
           {
             name: "📊 ACS",
-            value: `${data.acs}`,
+            value: `${data.acs || 0}`,
           },
           {
             name: "🎯 Headshot Percentage",
-            value: `${data.headshot_percentage}%`,
+            value: `${data.headshot_percentage || 0}%`,
           }
         );
 
@@ -91,16 +93,67 @@ module.exports = {
       if (statsType === "current") {
         statsEmbed.addFields({
           name: "💯 Tracker Score",
-          value: `${data.tracker_score}/1000`,
+          value: `${data.tracker_score || "N/A"}/1000`,
         });
       }
+
+      const weaponsEmbed = new EmbedBuilder()
+        .setColor("#0099ff")
+        .setTitle(`${data.username}'s Top Weapons`)
+        .setDescription(`${data.username}'s top weapons stats:`);
+
+      data.top_weapons.forEach((weapon) => {
+        weaponsEmbed.addFields({
+          name: weapon.name,
+          value:
+            `Type: ${weapon.weapon_type}\n` +
+            `Kills: ${weapon.kills}\n` +
+            `Accuracy: ${weapon.accuracy.join(", ")}\n`,
+          inline: true,
+        });
+      });
+
+      const mapsEmbed = new EmbedBuilder()
+        .setColor("#0099ff")
+        .setTitle(`${data.username}'s Top Maps`)
+        .setDescription(`${data.username}'s top maps stats:`);
+
+      data.top_maps.forEach((map) => {
+        mapsEmbed.addFields({
+          name: map.name,
+          value: `Win Percentage: ${map.win_percentage}%\nMatches: ${map.matches}`,
+          inline: true,
+        });
+      });
+
+      const rolesEmbed = new EmbedBuilder()
+        .setColor("#0099ff")
+        .setTitle(`${data.username}'s Roles`)
+        .setDescription(`${data.username}'s performance by role:`);
+
+      data.roles.forEach((role) => {
+        rolesEmbed.addFields({
+          name: role.name,
+          value:
+            `Win Rate: ${role.win_rate}%\n` +
+            `KDA: ${role.kda}\n` +
+            `Wins: ${role.wins}\n` +
+            `Losses: ${role.losses}\n` +
+            `Kills: ${role.kills}\n` +
+            `Deaths: ${role.deaths}\n` +
+            `Assists: ${role.assists}`,
+          inline: true,
+        });
+      });
 
       statsEmbed.setTimestamp().setFooter({
         text: "Valorant Stats API made by Ayden",
         iconURL: interaction.guild.iconURL(),
       });
 
-      return interaction.editReply({ embeds: [statsEmbed] });
+      return interaction.editReply({
+        embeds: [statsEmbed, weaponsEmbed, mapsEmbed, rolesEmbed],
+      });
     } catch (error) {
       console.error("Error fetching player stats:", error);
       if (error.response) {
