@@ -119,7 +119,12 @@ module.exports = {
             name: "🎯 Headshot Percentage",
             value: `${data.headshot_percentage}%`,
           }
-        );
+        )
+        .setTimestamp()
+        .setFooter({
+          text: "Valorant Stats API made by Ayden",
+          iconURL: interaction.guild.iconURL(),
+        });
 
       // Add the Tracker Score field only if statsType is "current"
       if (statsType === "current") {
@@ -136,20 +141,26 @@ module.exports = {
         const weaponsEmbed = new EmbedBuilder()
           .setColor("#0099ff")
           .setTitle(`${data.username}'s Top Weapons`)
-          .setDescription(`${data.username}'s top weapons stats:`);
+          .setDescription(`${data.username}'s top weapons stats:`)
+          .setTimestamp()
+          .setFooter({
+            text: "Valorant Stats API made by Ayden",
+            iconURL: interaction.guild.iconURL(),
+          });
 
         data.top_weapons.forEach((weapon) => {
           if (weapon.weapon_name) {
+            const accuracy = Array.isArray(weapon.weapon_accuracy)
+              ? weapon.weapon_accuracy
+              : ["N/A", "N/A", "N/A"];
+            const formattedAccuracy = `Head: ${accuracy[0]}\nBody: ${accuracy[1]}\nLegs: ${accuracy[2]}`;
+
             weaponsEmbed.addFields({
               name: weapon.weapon_name,
               value:
                 `Type: ${weapon.weapon_type}\n` +
                 `Kills: ${weapon.weapon_kills}\n` +
-                `Accuracy: ${
-                  Array.isArray(weapon.weapon_accuracy)
-                    ? weapon.weapon_accuracy.join(", ")
-                    : "N/A"
-                }\n`,
+                `**Accuracy**: \n${formattedAccuracy}\n`,
               inline: true,
             });
           } else {
@@ -165,7 +176,12 @@ module.exports = {
         const mapsEmbed = new EmbedBuilder()
           .setColor("#0099ff")
           .setTitle(`${data.username}'s Top Maps`)
-          .setDescription(`${data.username}'s top maps stats:`);
+          .setDescription(`${data.username}'s top maps stats:`)
+          .setTimestamp()
+          .setFooter({
+            text: "Valorant Stats API made by Ayden",
+            iconURL: interaction.guild.iconURL(),
+          });
 
         data.top_maps.forEach((map) => {
           if (map.map_name) {
@@ -187,7 +203,12 @@ module.exports = {
         const rolesEmbed = new EmbedBuilder()
           .setColor("#0099ff")
           .setTitle(`${data.username}'s Roles`)
-          .setDescription(`${data.username}'s performance by role:`);
+          .setDescription(`${data.username}'s performance by role:`)
+          .setTimestamp()
+          .setFooter({
+            text: "Valorant Stats API made by Ayden",
+            iconURL: interaction.guild.iconURL(),
+          });
 
         data.roles.forEach((role) => {
           if (role.role_name) {
@@ -210,11 +231,6 @@ module.exports = {
 
         embeds.push(rolesEmbed);
       }
-
-      statsEmbed.setTimestamp().setFooter({
-        text: "Valorant Stats API made by Ayden",
-        iconURL: interaction.guild.iconURL(),
-      });
 
       return interaction.editReply({ embeds });
     } catch (error) {
