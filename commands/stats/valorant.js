@@ -148,7 +148,8 @@ module.exports = {
             iconURL: interaction.guild.iconURL(),
           });
 
-        data.top_weapons.forEach((weapon) => {
+        // Use a counter to number the weapons
+        data.top_weapons.forEach((weapon, index) => {
           if (weapon.weapon_name) {
             const accuracy = Array.isArray(weapon.weapon_accuracy)
               ? weapon.weapon_accuracy
@@ -156,7 +157,7 @@ module.exports = {
             const formattedAccuracy = `Head: ${accuracy[0]}\nBody: ${accuracy[1]}\nLegs: ${accuracy[2]}`;
 
             weaponsEmbed.addFields({
-              name: weapon.weapon_name,
+              name: `${index + 1}. ${weapon.weapon_name}`, // Include numbering
               value:
                 `Type: ${weapon.weapon_type}\n` +
                 `Kills: ${weapon.weapon_kills}\n` +
@@ -183,10 +184,11 @@ module.exports = {
             iconURL: interaction.guild.iconURL(),
           });
 
-        data.top_maps.forEach((map) => {
+        // Use a counter to number the maps
+        data.top_maps.forEach((map, index) => {
           if (map.map_name) {
             mapsEmbed.addFields({
-              name: map.map_name,
+              name: `${index + 1}. ${map.map_name}`,
               value: `Win Percentage: ${map.map_win_percentage}%\nMatches: ${map.map_matches}`,
               inline: true,
             });
@@ -210,10 +212,11 @@ module.exports = {
             iconURL: interaction.guild.iconURL(),
           });
 
-        data.roles.forEach((role) => {
+        // Use a counter to number the roles
+        data.roles.forEach((role, index) => {
           if (role.role_name) {
             rolesEmbed.addFields({
-              name: role.role_name,
+              name: `${index + 1}. ${role.role_name}`,
               value:
                 `Win Rate: ${role.role_win_rate}%\n` +
                 `KDA: ${role.role_kda}\n` +
