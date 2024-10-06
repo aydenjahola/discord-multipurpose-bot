@@ -139,14 +139,22 @@ module.exports = {
           .setDescription(`${data.username}'s top weapons stats:`);
 
         data.top_weapons.forEach((weapon) => {
-          weaponsEmbed.addFields({
-            name: weapon.name,
-            value:
-              `Type: ${weapon.weapon_type}\n` +
-              `Kills: ${weapon.kills}\n` +
-              `Accuracy: ${weapon.accuracy.join(", ")}\n`,
-            inline: true,
-          });
+          if (weapon.weapon_name) {
+            weaponsEmbed.addFields({
+              name: weapon.weapon_name,
+              value:
+                `Type: ${weapon.weapon_type}\n` +
+                `Kills: ${weapon.weapon_kills}\n` +
+                `Accuracy: ${
+                  Array.isArray(weapon.weapon_accuracy)
+                    ? weapon.weapon_accuracy.join(", ")
+                    : "N/A"
+                }\n`,
+              inline: true,
+            });
+          } else {
+            console.warn("Weapon name is undefined:", weapon);
+          }
         });
 
         embeds.push(weaponsEmbed);
@@ -160,11 +168,15 @@ module.exports = {
           .setDescription(`${data.username}'s top maps stats:`);
 
         data.top_maps.forEach((map) => {
-          mapsEmbed.addFields({
-            name: map.name,
-            value: `Win Percentage: ${map.win_percentage}%\nMatches: ${map.matches}`,
-            inline: true,
-          });
+          if (map.map_name) {
+            mapsEmbed.addFields({
+              name: map.map_name,
+              value: `Win Percentage: ${map.map_win_percentage}%\nMatches: ${map.map_matches}`,
+              inline: true,
+            });
+          } else {
+            console.warn("Map name is undefined:", map);
+          }
         });
 
         embeds.push(mapsEmbed);
@@ -178,18 +190,22 @@ module.exports = {
           .setDescription(`${data.username}'s performance by role:`);
 
         data.roles.forEach((role) => {
-          rolesEmbed.addFields({
-            name: role.name,
-            value:
-              `Win Rate: ${role.win_rate}%\n` +
-              `KDA: ${role.kda}\n` +
-              `Wins: ${role.wins}\n` +
-              `Losses: ${role.losses}\n` +
-              `Kills: ${role.kills}\n` +
-              `Deaths: ${role.deaths}\n` +
-              `Assists: ${role.assists}`,
-            inline: true,
-          });
+          if (role.role_name) {
+            rolesEmbed.addFields({
+              name: role.role_name,
+              value:
+                `Win Rate: ${role.role_win_rate}%\n` +
+                `KDA: ${role.role_kda}\n` +
+                `Wins: ${role.role_wins}\n` +
+                `Losses: ${role.role_losses}\n` +
+                `Kills: ${role.role_kills}\n` +
+                `Deaths: ${role.role_deaths}\n` +
+                `Assists: ${role.role_assists}`,
+              inline: true,
+            });
+          } else {
+            console.warn("Role name is undefined:", role);
+          }
         });
 
         embeds.push(rolesEmbed);
