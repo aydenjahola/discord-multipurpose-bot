@@ -90,6 +90,11 @@ module.exports = {
           inline: true,
         },
         {
+          name: "Total Kills (M4A1)",
+          value: `${data.total_kills_m4a1}`,
+          inline: true,
+        },
+        {
           name: "Total Kills (Headshot)",
           value: `${data.total_kills_headshot}`,
           inline: true,
