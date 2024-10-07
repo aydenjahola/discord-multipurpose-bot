@@ -38,6 +38,10 @@ module.exports = {
       const fields = [
         { name: "🎮 Steam Name", value: data.player_name || "N/A" },
         { name: "⏳ Hours Played", value: `${data.hours_played}h` },
+        {
+          name: "🎮 Total Matches Played",
+          value: `${data.total_gg_matches_played}`,
+        },
         { name: "🎮 Kills", value: `${data.kills}` },
         { name: "📈 K/D Ratio", value: `${data.kd_ratio}` },
         { name: "🏅 Total Deaths", value: `${data.total_deaths}` },
@@ -49,6 +53,11 @@ module.exports = {
 
       // Adding additional fields dynamically
       const additionalFields = [
+        {
+          name: "Total Matches Played (All Modes)",
+          value: `${data.total_matches_played}`,
+          inline: true,
+        },
         {
           name: "Total Planted Bombs",
           value: `${data.total_planted_bombs}`,
