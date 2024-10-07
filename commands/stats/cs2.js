@@ -39,7 +39,7 @@ module.exports = {
         { name: "🎮 Steam Name", value: data.player_name || "N/A" },
         { name: "⏳ Hours Played", value: `${data.hours_played}h` },
         {
-          name: "🎮 Total Matches Played",
+          name: "🎮 Total Matches Played (Competitive)",
           value: `${data.total_gg_matches_played}`,
         },
         { name: "🎮 Kills", value: `${data.kills}` },
