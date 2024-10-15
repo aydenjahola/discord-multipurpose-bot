@@ -42,17 +42,30 @@ function loadCommands(dir) {
 // Load all commands from the commands directory and its subdirectories
 loadCommands(path.join(__dirname, "commands"));
 
+async function registerCommands(guildId) {
+  const commands = client.commands.map((cmd) => cmd.data.toJSON());
+  const rest = new REST({ version: "10" }).setToken(process.env.BOT_TOKEN);
+
+  try {
+    await rest.put(Routes.applicationGuildCommands(client.user.id, guildId), {
+      body: commands,
+    });
+    console.log(`🔄 Successfully registered commands for guild: ${guildId}`);
+  } catch (error) {
+    console.error("Error registering commands:", error);
+  }
+}
+
 client.once("ready", async () => {
   console.log(`\n==============================`);
   console.log(`🤖 Logged in as ${client.user.tag}`);
   console.log(`==============================`);
-  console.log(`📋 Registered Commands:\n`);
-  client.commands.forEach((command) => {
-    console.log(`🔹 /${command.data.name} - ${command.data.description}`);
-  });
-  console.log(`\n==============================\n`);
 
-  const commands = client.commands.map((cmd) => cmd.data.toJSON());
+  // Register commands for all existing guilds
+  const guilds = client.guilds.cache.map((guild) => guild.id);
+  for (const guildId of guilds) {
+    await registerCommands(guildId);
+  }
 
   // Set bot status and activity
   client.user.setPresence({
@@ -60,25 +73,20 @@ client.once("ready", async () => {
     status: "online",
   });
 
-  const rest = new REST({ version: "10" }).setToken(process.env.BOT_TOKEN);
+  console.log(`\n==============================\n`);
+});
 
-  // Fetching the guild ID from MongoDB
-  let GUILD_ID;
+// Listen for new guild joins and register the guild ID in the database
+client.on("guildCreate", async (guild) => {
   try {
-    const serverSettings = await ServerSettings.findOne();
-    if (serverSettings) {
-      GUILD_ID = serverSettings.guildId;
-    } else {
-      console.error("No server settings found in MongoDB.");
-      return;
-    }
+    // Create a new entry in the ServerSettings collection with just the guildId
+    await ServerSettings.create({ guildId: guild.id });
+    console.log(`✅ Registered new server: ${guild.name} (ID: ${guild.id})`);
 
-    await rest.put(Routes.applicationGuildCommands(client.user.id, GUILD_ID), {
-      body: commands,
-    });
-    console.log("Successfully registered all application commands.");
-  } catch (err) {
-    console.error("Error registering application commands:", err);
+    // Register slash commands for the new guild
+    await registerCommands(guild.id);
+  } catch (error) {
+    console.error("Error registering new server or commands:", error);
   }
 });
 
@@ -113,7 +121,7 @@ client.on("interactionCreate", async (interaction) => {
   }
 });
 
-client.on("Error", (err) => {
+client.on("error", (err) => {
   console.error("Client error:", err);
 });
 
