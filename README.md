@@ -4,6 +4,8 @@
 
 This bot includes game statistics functionality (currently supports Valorant, CS2 and TFT). Unfortunately, due to [Tracker.gg](https://tracker.gg/) no longer providing API keys, I have created my own API to retrieve the data. Currently, this API is not publicly available. If you wish to use the bot's game stats commands, please feel free to reach out to me via my [email](mailto:info@aydenjahola.com).
 
+---
+
 Welcome to the **Discord Multipurpose Bot**! This bot manages user verification for Discord servers through email authentication, includes a fun trivia game feature, and provides role management and leaderboard tracking functionalities.
 
 ## Features
