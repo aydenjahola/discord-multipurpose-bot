@@ -1,108 +1,49 @@
 const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
 const ShopItem = require("../../models/ShopItem");
-const UserEconomy = require("../../models/UserEconomy");
-const UserInventory = require("../../models/UserInventory");
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("shop")
-    .setDescription("View the shop and buy items")
-    .addStringOption((option) =>
-      option.setName("item").setDescription("The ID of the item to buy")
-    ),
+    .setDescription("Browse the shop for items with rarity and discounts!"),
 
   async execute(interaction) {
     const { user, guild } = interaction;
-    const itemId = interaction.options.getString("item");
+    const discountChance = 0.3;
+    const items = await ShopItem.find({ guildId: guild.id });
 
-    if (!itemId) {
-      const items = await ShopItem.find();
-      const itemDescriptions = items.map(
-        (item) => `**${item.itemId}**: ${item.name} - **${item.price}** coins`
-      );
-
-      const shopEmbed = new EmbedBuilder()
-        .setColor("#00bfff")
-        .setTitle("🛒 Shop Items")
-        .setDescription(
-          itemDescriptions.length > 0
-            ? itemDescriptions.join("\n")
-            : "No items available at the moment."
-        )
-        .setFooter({
-          text: `Requested in ${guild.name}`,
-          iconURL: guild.iconURL() || null,
-        });
-
-      await interaction.reply({ embeds: [shopEmbed] });
-      return;
-    }
-
-    const shopItem = await ShopItem.findOne({ itemId });
-    if (!shopItem) {
-      const notFoundEmbed = new EmbedBuilder()
+    if (items.length === 0) {
+      const emptyEmbed = new EmbedBuilder()
         .setColor("#ff0000")
-        .setTitle("❌ Item Not Found")
-        .setDescription("The specified item could not be found in the shop.")
+        .setTitle("Shop")
+        .setDescription("No items in the shop currently.")
+        .setTimestamp()
         .setFooter({
-          text: `Requested in ${guild.name}`,
-          iconURL: guild.iconURL() || null,
+          text: `Requested by ${user.username}`,
+          iconURL: user.displayAvatarURL(),
         });
 
-      await interaction.reply({ embeds: [notFoundEmbed] });
+      await interaction.reply({ embeds: [emptyEmbed] });
       return;
     }
 
-    const userEconomy = await UserEconomy.findOne({
-      userId: user.id,
-      guildId: guild.id,
+    const shopItemsDetails = items.map((item) => {
+      const discount = Math.random() < discountChance ? 0.8 : 1;
+      const price = Math.floor(item.price * discount);
+      const discountText = discount < 1 ? " (Discounted!)" : "";
+
+      return `${item.name} - **${price}** coins${discountText} - Rarity: ${item.rarity}`;
     });
-    if (!userEconomy || userEconomy.balance < shopItem.price) {
-      const insufficientFundsEmbed = new EmbedBuilder()
-        .setColor("#ff0000")
-        .setTitle("💸 Insufficient Funds")
-        .setDescription("You don't have enough coins to purchase this item.")
-        .setFooter({
-          text: `Requested in ${guild.name}`,
-          iconURL: guild.iconURL() || null,
-        });
 
-      await interaction.reply({ embeds: [insufficientFundsEmbed] });
-      return;
-    }
-
-    userEconomy.balance -= shopItem.price;
-    await userEconomy.save();
-
-    let userInventory = await UserInventory.findOne({
-      userId: user.id,
-      guildId: guild.id,
-      itemId,
-    });
-    if (userInventory) {
-      userInventory.quantity += 1;
-    } else {
-      userInventory = new UserInventory({
-        userId: user.id,
-        guildId: guild.id,
-        itemId,
-        quantity: 1,
-      });
-    }
-    await userInventory.save();
-
-    const successEmbed = new EmbedBuilder()
+    const shopEmbed = new EmbedBuilder()
       .setColor("#00ff00")
-      .setTitle("🎉 Purchase Successful")
-      .setDescription(
-        `You've successfully purchased **${shopItem.name}** for **${shopItem.price}** coins!`
-      )
+      .setTitle("Shop")
+      .setDescription(shopItemsDetails.join("\n"))
       .setTimestamp()
       .setFooter({
         text: `Requested by ${user.username}`,
         iconURL: user.displayAvatarURL(),
       });
 
-    await interaction.reply({ embeds: [successEmbed] });
+    await interaction.reply({ embeds: [shopEmbed] });
   },
 };

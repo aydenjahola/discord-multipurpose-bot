@@ -4,29 +4,35 @@ const UserEconomy = require("../../models/UserEconomy");
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("work")
-    .setDescription("Work to earn coins!"),
+    .setDescription("Work to earn coins and experience random events!"),
 
   async execute(interaction) {
     const { user, guild } = interaction;
-    const workReward = 100;
-    const cooldownTime = 60 * 60 * 1000;
+    const jobs = [
+      { name: "Farmer", reward: 100 },
+      { name: "Miner", reward: 150 },
+      { name: "Chef", reward: 120 },
+      { name: "Artist", reward: 130 },
+    ];
+    const randomJob = jobs[Math.floor(Math.random() * jobs.length)];
+    const randomBonus =
+      Math.random() < 0.1 ? Math.floor(Math.random() * 200) : 0;
+    const workReward = randomJob.reward + randomBonus;
 
     let userEconomy = await UserEconomy.findOne({
       userId: user.id,
       guildId: guild.id,
     });
+    const cooldownTime = 60 * 60 * 1000;
 
     if (!userEconomy) {
       userEconomy = await UserEconomy.create({
         userId: user.id,
         guildId: guild.id,
-        lastWork: null,
-        balance: 0,
       });
     }
 
     const now = new Date();
-
     if (userEconomy.lastWork && now - userEconomy.lastWork < cooldownTime) {
       const remainingTime = cooldownTime - (now - userEconomy.lastWork);
       const remainingMinutes = Math.ceil(remainingTime / (60 * 1000));
@@ -54,12 +60,9 @@ module.exports = {
     const successEmbed = new EmbedBuilder()
       .setColor("#00ff00")
       .setTitle("Work Success")
-      .setDescription(`You worked hard and earned **${workReward}** coins!`)
-      .addFields({
-        name: "Total Balance",
-        value: `${userEconomy.balance} coins`,
-        inline: true,
-      })
+      .setDescription(
+        `You worked as a **${randomJob.name}** and earned **${workReward}** coins!`
+      )
       .setTimestamp()
       .setFooter({
         text: `Requested by ${user.username}`,

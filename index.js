@@ -62,11 +62,14 @@ client.once("ready", async () => {
   console.log(`🤖 Logged in as ${client.user.tag}`);
   console.log(`==============================`);
 
-  // Seed the shop items
-  await seedShopItems();
-
   // Register commands for all existing guilds
   const guilds = client.guilds.cache.map((guild) => guild.id);
+
+  // Seed the shop items
+  for (const guildId of guilds) {
+    await seedShopItems(guildId); // Pass guildId to seedShopItems
+  }
+
   for (const guildId of guilds) {
     await registerCommands(guildId);
   }
@@ -86,6 +89,9 @@ client.on("guildCreate", async (guild) => {
     // Create a new entry in the ServerSettings collection with just the guildId
     await ServerSettings.create({ guildId: guild.id });
     console.log(`✅ Registered new server: ${guild.name} (ID: ${guild.id})`);
+
+    // seed items for new guild with guildId
+    await seedShopItems(guild.id);
 
     // Register slash commands for the new guild
     await registerCommands(guild.id);

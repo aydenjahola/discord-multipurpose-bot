@@ -5,11 +5,10 @@ const ShopItem = require("../../models/ShopItem");
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("inventory")
-    .setDescription("View your inventory"),
+    .setDescription("View your inventory with item rarity"),
 
   async execute(interaction) {
     const { user, guild } = interaction;
-
     const inventory = await UserInventory.find({
       userId: user.id,
       guildId: guild.id,
@@ -20,9 +19,10 @@ module.exports = {
         .setColor("#ff0000")
         .setTitle("Inventory")
         .setDescription("Your inventory is empty.")
+        .setTimestamp()
         .setFooter({
-          text: `Requested in ${guild.name}`,
-          iconURL: guild.iconURL() || null,
+          text: `Requested by ${user.username}`,
+          iconURL: user.displayAvatarURL(),
         });
 
       await interaction.reply({ embeds: [emptyEmbed] });
@@ -33,27 +33,13 @@ module.exports = {
       inventory.map(async (item) => {
         const shopItem = await ShopItem.findOne({ itemId: item.itemId });
         if (item.quantity > 0) {
-          return `${shopItem.name} (x${item.quantity})`;
+          return `${shopItem.name} (x${item.quantity}) - **Rarity**: ${shopItem.rarity}`;
         }
         return null;
       })
     );
 
     const filteredItemDetails = itemDetails.filter((detail) => detail !== null);
-
-    if (filteredItemDetails.length === 0) {
-      const noItemsEmbed = new EmbedBuilder()
-        .setColor("#ff0000")
-        .setTitle("Inventory")
-        .setDescription("Your inventory is empty.")
-        .setFooter({
-          text: `Requested in ${guild.name}`,
-          iconURL: guild.iconURL() || null,
-        });
-
-      await interaction.reply({ embeds: [noItemsEmbed] });
-      return;
-    }
 
     const inventoryEmbed = new EmbedBuilder()
       .setColor("#00ff00")
