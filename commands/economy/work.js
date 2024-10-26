@@ -37,9 +37,10 @@ module.exports = {
         .setDescription(
           `You need to wait **${remainingMinutes}** minutes before you can work again.`
         )
+        .setTimestamp()
         .setFooter({
-          text: `Requested in ${guild.name}`,
-          iconURL: guild.iconURL() || null,
+          text: `Requested by ${user.username}`,
+          iconURL: user.displayAvatarURL(),
         });
 
       await interaction.reply({ embeds: [cooldownEmbed] });
