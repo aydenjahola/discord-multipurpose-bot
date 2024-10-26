@@ -32,8 +32,17 @@ module.exports = {
     const itemDetails = await Promise.all(
       inventory.map(async (item) => {
         const shopItem = await ShopItem.findOne({ itemId: item.itemId });
+
+        if (!shopItem) {
+          return null;
+        }
+
         if (item.quantity > 0) {
-          return `${shopItem.name} (x${item.quantity}) - **Rarity**: ${shopItem.rarity}`;
+          return `${shopItem.name} (x${item.quantity}) - **Rarity**: ${
+            shopItem.rarity
+          } - **Type**: ${shopItem.type} - **Category**: ${
+            shopItem.category || "N/A"
+          }`;
         }
         return null;
       })
@@ -44,7 +53,9 @@ module.exports = {
     const inventoryEmbed = new EmbedBuilder()
       .setColor("#00ff00")
       .setTitle(`${user.username}'s Inventory`)
-      .setDescription(filteredItemDetails.join("\n"))
+      .setDescription(
+        filteredItemDetails.join("\n") || "No items in inventory."
+      )
       .setTimestamp()
       .setFooter({
         text: `Requested by ${user.username}`,

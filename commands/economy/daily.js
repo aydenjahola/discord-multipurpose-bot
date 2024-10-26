@@ -22,7 +22,8 @@ module.exports = {
       userEconomy = await UserEconomy.create({
         userId: user.id,
         guildId: guild.id,
-        streak: 0, // Initialize streak
+        streak: 0,
+        balance: 0,
       });
     }
 
@@ -56,17 +57,14 @@ module.exports = {
     }
 
     userEconomy.streak += 1;
-
-    let reward = dailyBaseReward + userEconomy.streak * streakBonus;
+    const reward = dailyBaseReward + userEconomy.streak * streakBonus;
     userEconomy.lastDaily = now;
     userEconomy.balance += reward;
 
     const rareItemEarned = Math.random() < rareItemChance;
-    let rareItemMessage = "";
-
-    if (rareItemEarned) {
-      rareItemMessage = "\nYou also found a **rare item** in your reward!";
-    }
+    const rareItemMessage = rareItemEarned
+      ? "\nYou also found a **rare item** in your reward!"
+      : "";
 
     await userEconomy.save();
 
