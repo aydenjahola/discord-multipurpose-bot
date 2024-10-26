@@ -6,6 +6,7 @@ const userEconomySchema = new mongoose.Schema({
   balance: { type: Number, default: 200 },
   lastDaily: { type: Date, default: null },
   lastWork: { type: Date, default: null },
+  streak: { type: Number, default: 0 },
 });
 
 module.exports = mongoose.model("UserEconomy", userEconomySchema);

@@ -11,6 +11,8 @@ const shopItemSchema = new mongoose.Schema({
     enum: ["Common", "Rare", "Epic", "Legendary"],
     default: "Common",
   },
+  type: { type: String, required: true },
+  category: { type: String },
 });
 
 module.exports = mongoose.model("ShopItem", shopItemSchema);

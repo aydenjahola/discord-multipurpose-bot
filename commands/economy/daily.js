@@ -22,10 +22,12 @@ module.exports = {
       userEconomy = await UserEconomy.create({
         userId: user.id,
         guildId: guild.id,
+        streak: 0, // Initialize streak
       });
     }
 
     const now = new Date();
+
     if (userEconomy.lastDaily && now - userEconomy.lastDaily < oneDay) {
       const remainingTime =
         new Date(userEconomy.lastDaily.getTime() + oneDay) - now;
@@ -49,8 +51,13 @@ module.exports = {
       return;
     }
 
-    let reward = dailyBaseReward + userEconomy.streak * streakBonus;
+    if (userEconomy.lastDaily && now - userEconomy.lastDaily >= oneDay) {
+      userEconomy.streak = 0;
+    }
+
     userEconomy.streak += 1;
+
+    let reward = dailyBaseReward + userEconomy.streak * streakBonus;
     userEconomy.lastDaily = now;
     userEconomy.balance += reward;
 

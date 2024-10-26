@@ -31,7 +31,9 @@ module.exports = {
       const price = Math.floor(item.price * discount);
       const discountText = discount < 1 ? " (Discounted!)" : "";
 
-      return `${item.name} - **${price}** coins${discountText} - Rarity: ${item.rarity}`;
+      return `${item.name} - **${price}** coins${discountText} - Rarity: ${
+        item.rarity
+      } - Type: ${item.type} - Category: ${item.category || "N/A"}`;
     });
 
     const shopEmbed = new EmbedBuilder()
