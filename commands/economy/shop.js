@@ -60,9 +60,9 @@ module.exports = {
       }
 
       const discount = Math.random() < discountChance ? 0.8 : 1;
-      const price = Math.floor(item.price * discount);
+      const discountedPrice = Math.floor(item.price * discount);
 
-      if (userEconomy.balance < price) {
+      if (userEconomy.balance < discountedPrice) {
         const insufficientFundsEmbed = new EmbedBuilder()
           .setColor("#ff0000")
           .setTitle("💸 Insufficient Funds")
@@ -75,7 +75,11 @@ module.exports = {
               value: `${userEconomy.balance} coins`,
               inline: true,
             },
-            { name: "Item Price", value: `${price} coins`, inline: true }
+            {
+              name: "Item Price",
+              value: `${discountedPrice} coins`,
+              inline: true,
+            }
           )
           .setTimestamp()
           .setFooter({
@@ -90,7 +94,7 @@ module.exports = {
         return;
       }
 
-      userEconomy.balance -= price;
+      userEconomy.balance -= discountedPrice;
       await userEconomy.save();
 
       const userInventory = await UserInventory.findOne({
@@ -113,7 +117,9 @@ module.exports = {
       const successEmbed = new EmbedBuilder()
         .setColor("#00ff00")
         .setTitle("🎉 Purchase Successful")
-        .setDescription(`You bought **${item.name}** for **${price}** coins!`)
+        .setDescription(
+          `You bought **${item.name}** for **${discountedPrice}** coins!`
+        )
         .setTimestamp()
         .setFooter({
           text: `Requested by ${user.username}`,
