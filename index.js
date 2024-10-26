@@ -10,6 +10,7 @@ const mongoose = require("mongoose");
 const fs = require("fs");
 const path = require("path");
 const ServerSettings = require("./models/ServerSettings");
+const seedShopItems = require("./utils/seedShopItems");
 
 const client = new Client({
   intents: [
@@ -60,6 +61,9 @@ client.once("ready", async () => {
   console.log(`\n==============================`);
   console.log(`🤖 Logged in as ${client.user.tag}`);
   console.log(`==============================`);
+
+  // Seed the shop items
+  await seedShopItems();
 
   // Register commands for all existing guilds
   const guilds = client.guilds.cache.map((guild) => guild.id);
