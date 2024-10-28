@@ -11,12 +11,23 @@ module.exports = {
 
   async execute(interaction, client) {
     try {
-      // Check if the user has the Manage Roles permission
       const isMod = interaction.member.permissions.has(
         PermissionsBitField.Flags.ManageRoles
       );
 
       const serverName = interaction.guild.name;
+      const generalCommands = [];
+      const modCommands = [];
+
+      // Categorize commands
+      client.commands.forEach((command) => {
+        const commandLine = `/${command.data.name} - ${command.data.description}`;
+        if (!command.isModOnly) {
+          generalCommands.push(commandLine);
+        } else if (isMod) {
+          modCommands.push(`${commandLine} (Mods only)`);
+        }
+      });
 
       const helpEmbed = new EmbedBuilder()
         .setColor("#0099ff")
@@ -30,39 +41,46 @@ module.exports = {
           iconURL: client.user.displayAvatarURL(),
         });
 
-      // Group commands into general and mod-only
-      const generalCommands = [];
-      const modCommands = [];
+      // Function to split commands into fields under 1024 characters
+      const addCommandFields = (embed, commands, title) => {
+        let commandChunk = "";
+        let chunkCount = 1;
 
-      client.commands.forEach((command) => {
-        const commandLine = `/${command.data.name} - ${command.data.description}`;
-        if (!command.isModOnly) {
-          generalCommands.push(commandLine);
-        } else if (isMod) {
-          modCommands.push(`${commandLine} (Mods only)`);
-        }
-      });
-
-      helpEmbed.addFields({
-        name: `General Commands (${generalCommands.length} available)`,
-        value:
-          generalCommands.length > 0
-            ? generalCommands.join("\n")
-            : "No general commands available.",
-        inline: false,
-      });
-
-      if (isMod) {
-        helpEmbed.addFields({
-          name: `Mod-Only Commands (${modCommands.length} available)`,
-          value:
-            modCommands.length > 0
-              ? modCommands.join("\n")
-              : "No mod-only commands available.",
-          inline: false,
+        commands.forEach((command) => {
+          // Check if adding this command will exceed the 1024 character limit
+          if ((commandChunk + command).length > 1024) {
+            // Add current chunk as a new field
+            embed.addFields({
+              name: `${title} (Part ${chunkCount})`,
+              value: commandChunk,
+            });
+            commandChunk = ""; // Reset chunk for new field
+            chunkCount += 1;
+          }
+          // Append command to the current chunk
+          commandChunk += command + "\n";
         });
+
+        // Add any remaining commands in the last chunk
+        if (commandChunk) {
+          embed.addFields({
+            name: `${title} (Part ${chunkCount})`,
+            value: commandChunk,
+          });
+        }
+      };
+
+      // Add general commands in fields
+      if (generalCommands.length > 0) {
+        addCommandFields(helpEmbed, generalCommands, "General Commands");
       }
 
+      // Add mod-only commands in fields, if user is a mod
+      if (isMod && modCommands.length > 0) {
+        addCommandFields(helpEmbed, modCommands, "Mod-Only Commands");
+      }
+
+      // Send the single embed
       await interaction.reply({
         embeds: [helpEmbed],
       });

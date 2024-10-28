@@ -11,6 +11,7 @@ const fs = require("fs");
 const path = require("path");
 const ServerSettings = require("./models/ServerSettings");
 const seedShopItems = require("./utils/seedShopItems");
+const seedSpyfallLocations = require("./utils/seedSpyfallLocations");
 
 const client = new Client({
   intents: [
@@ -67,10 +68,8 @@ client.once("ready", async () => {
 
   // Seed the shop items
   for (const guildId of guilds) {
-    await seedShopItems(guildId); // Pass guildId to seedShopItems
-  }
-
-  for (const guildId of guilds) {
+    await seedShopItems(guildId);
+    await seedSpyfallLocations(guildId);
     await registerCommands(guildId);
   }
 
@@ -92,6 +91,9 @@ client.on("guildCreate", async (guild) => {
 
     // seed items for new guild with guildId
     await seedShopItems(guild.id);
+
+    // Seed spyfall locations for the new guild
+    await seedSpyfallLocations(guild.id);
 
     // Register slash commands for the new guild
     await registerCommands(guild.id);
