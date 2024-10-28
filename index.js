@@ -66,12 +66,13 @@ client.once("ready", async () => {
   // Register commands for all existing guilds
   const guilds = client.guilds.cache.map((guild) => guild.id);
 
-  // Seed the shop items
-  for (const guildId of guilds) {
-    await seedShopItems(guildId);
-    await seedSpyfallLocations(guildId);
-    await registerCommands(guildId);
-  }
+  await Promise.all(
+    guilds.map(async (guildId) => {
+      await seedShopItems(guildId);
+      await seedSpyfallLocations(guildId);
+      await registerCommands(guildId);
+    })
+  );
 
   // Set bot status and activity
   client.user.setPresence({
