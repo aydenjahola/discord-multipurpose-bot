@@ -1,7 +1,24 @@
+// app/api/discord/channels/route.ts
+
 import { NextResponse } from "next/server";
 import axios from "axios";
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "../../auth/[...nextauth]/route";
+import DiscordProvider from "next-auth/providers/discord";
+
+const authOptions = {
+  providers: [
+    DiscordProvider({
+      clientId: process.env.DISCORD_CLIENT_ID!,
+      clientSecret: process.env.DISCORD_CLIENT_SECRET!,
+      authorization: {
+        params: {
+          scope: "identify guilds",
+        },
+      },
+    }),
+  ],
+  secret: process.env.NEXTAUTH_SECRET,
+};
 
 const DISCORD_API_BASE = "https://discord.com/api/v10";
 const BOT_TOKEN = process.env.DISCORD_BOT_TOKEN;
