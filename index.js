@@ -5,6 +5,7 @@ const {
   Collection,
   REST,
   Routes,
+  PresenceUpdateStatus,
 } = require("discord.js");
 const mongoose = require("mongoose");
 const fs = require("fs");
@@ -77,7 +78,7 @@ client.once("ready", async () => {
   // Set bot status and activity
   client.user.setPresence({
     activities: [{ name: "Degenerate Gamers!", type: 3 }],
-    status: "online",
+    status: PresenceUpdateStatus.Online,
   });
 
   console.log(`\n==============================\n`);
