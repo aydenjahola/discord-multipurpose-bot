@@ -63,7 +63,8 @@ module.exports = {
     const verifiedRole = interaction.options.getRole("verifiedrole");
     const emailDomains = interaction.options
       .getString("emaildomains")
-      .split(",");
+      .split(",")
+      .map((domain) => domain.trim());
     const actionitemschannel =
       interaction.options.getChannel("actionitemschannel");
 
