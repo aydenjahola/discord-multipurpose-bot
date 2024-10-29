@@ -62,4 +62,4 @@ run `/help` command to get list of all avaiable commands, or visit the [commands
 
 ## Dashboard (WIP)
 
-I am currently working on a dashboard to manage the bot as well, currently this is in the `dashboard` branch and still work in progress. if you know how to build discord bot dashboards then please feel free to contribute
+I am currently working on a dashboard to manage the bot as well, currently this is in the `dashboard` branch and still work in progress. if you know how to build discord bot dashboards then please feel free to contribute.
