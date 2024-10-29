@@ -64,6 +64,14 @@ module.exports = {
           ? serverSettings.emailDomains.join(", ")
           : "None";
 
+      const actionItemsChannel = interaction.guild.channels.cache.get(
+        serverSettings.actionItemsChannelId
+      );
+
+      const actionItemsTargetChannel = interaction.guild.channels.cache.get(
+        serverSettings.actionItemsTargetChannelId
+      );
+
       const settingsEmbed = new EmbedBuilder()
         .setColor("#0099ff")
         .setTitle("🌟 Current Server Settings 🌟")
@@ -85,7 +93,19 @@ module.exports = {
             value: serverSettings.verifiedRoleName || "None",
             inline: true,
           },
-          { name: "📧 Email Domains", value: emailDomains, inline: true }
+          { name: "📧 Email Domains", value: emailDomains, inline: true },
+          {
+            name: "📋 Action Items Channel",
+            value: actionItemsChannel ? `<#${actionItemsChannel.id}>` : "None",
+            inline: true,
+          },
+          {
+            name: "🎯 Action Items Target Channel",
+            value: actionItemsTargetChannel
+              ? `<#${actionItemsTargetChannel.id}>`
+              : "None",
+            inline: true,
+          }
         )
         .setTimestamp()
         .setFooter({
