@@ -1,5 +1,3 @@
-// app/api/discord/channels/route.ts
-
 import { NextResponse } from "next/server";
 import axios from "axios";
 import { getServerSession } from "next-auth/next";
