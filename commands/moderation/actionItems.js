@@ -1,4 +1,5 @@
 const { SlashCommandBuilder } = require("discord.js");
+const ServerSettings = require("../../models/ServerSettings");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -16,11 +17,23 @@ module.exports = {
     ),
 
   async execute(interaction) {
-    // Check if the command is used in the allowed channel
-    const allowedChannelId = "1299134735330836521";
-    if (interaction.channelId !== allowedChannelId) {
+    const serverSettings = await ServerSettings.findOne({
+      guildId: interaction.guild.id,
+    });
+
+    if (!serverSettings) {
       return interaction.reply({
-        content: `This command can only be used in the designated channel.`,
+        content:
+          "Server settings are not configured. Please run the setup command.",
+        ephemeral: true,
+      });
+    }
+
+    const actionItemChannelId = serverSettings.actionItemsChannelId;
+
+    if (interaction.channelId !== actionItemChannelId) {
+      return interaction.reply({
+        content: `This command can only be used in the <#${actionItemChannelId}> channel.`,
         ephemeral: true,
       });
     }

@@ -7,7 +7,9 @@ const ServerSettingsSchema = new mongoose.Schema({
   verificationChannelId: { type: String, required: false },
   generalChannelId: { type: String, required: false },
   emailDomains: { type: [String], required: false },
+  actionItemsChannelId: { type: String, required: false },
 });
 
 const ServerSettings = mongoose.model("ServerSettings", ServerSettingsSchema);
+
 module.exports = ServerSettings;

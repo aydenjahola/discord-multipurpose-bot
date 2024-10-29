@@ -34,6 +34,14 @@ module.exports = {
         .setName("emaildomains")
         .setDescription("Comma-separated list of allowed email domains.")
         .setRequired(true)
+    )
+    .addChannelOption((option) =>
+      option
+        .setName("actionitemschannel")
+        .setDescription(
+          "Select the allowed channel for action items. (Optional)"
+        )
+        .setRequired(false)
     ),
 
   async execute(interaction) {
@@ -56,6 +64,8 @@ module.exports = {
     const emailDomains = interaction.options
       .getString("emaildomains")
       .split(",");
+    const actionitemschannel =
+      interaction.options.getChannel("actionitemschannel");
 
     try {
       // Store the channel IDs instead of names
@@ -63,11 +73,14 @@ module.exports = {
         { guildId: interaction.guild.id },
         {
           guildId: interaction.guild.id,
-          logChannelId: logChannel.id, // Store log channel ID
+          logChannelId: logChannel.id,
           verifiedRoleName: verifiedRole.name,
-          verificationChannelId: verificationChannel.id, // Store verification channel ID
-          generalChannelId: generalChannel.id, // Store general channel ID
+          verificationChannelId: verificationChannel.id,
+          generalChannelId: generalChannel.id,
           emailDomains: emailDomains,
+          actionItemsChannelId: actionitemschannel
+            ? actionitemschannel.id
+            : null,
         },
         { upsert: true, new: true }
       );
@@ -78,7 +91,10 @@ module.exports = {
         **General Channel**: <#${generalChannel.id}>\n
         **Verification Channel**: <#${verificationChannel.id}>\n
         **Verified Role**: ${verifiedRole.name}\n
-        **Allowed Email Domains**: ${emailDomains.join(", ")}`,
+        **Allowed Email Domains**: ${emailDomains.join(", ")}\n
+        **Action Item Channel**: ${
+          actionitemschannel ? `<#${actionitemschannel.id}>` : "None"
+        }`,
         ephemeral: true,
       });
     } catch (error) {
