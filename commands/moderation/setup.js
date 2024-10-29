@@ -42,6 +42,14 @@ module.exports = {
           "Select the allowed channel for action items. (Optional)"
         )
         .setRequired(false)
+    )
+    .addChannelOption((option) =>
+      option
+        .setName("actionitemstargetchannel")
+        .setDescription(
+          "Select the target channel where action items are going to be sent. (Optional)"
+        )
+        .setRequired(false)
     ),
 
   async execute(interaction) {
@@ -67,6 +75,9 @@ module.exports = {
       .map((domain) => domain.trim());
     const actionitemschannel =
       interaction.options.getChannel("actionitemschannel");
+    const actionitemstargetchannel = interaction.options.getChannel(
+      "actionitemstargetchannel"
+    );
 
     try {
       // Store the channel IDs instead of names
@@ -82,6 +93,9 @@ module.exports = {
           actionItemsChannelId: actionitemschannel
             ? actionitemschannel.id
             : null,
+          actionItemsTargetChannelId: actionitemstargetchannel
+            ? actionitemstargetchannel.id
+            : null,
         },
         { upsert: true, new: true }
       );
@@ -95,7 +109,13 @@ module.exports = {
         **Allowed Email Domains**: ${emailDomains.join(", ")}\n
         **Action Item Channel**: ${
           actionitemschannel ? `<#${actionitemschannel.id}>` : "None"
-        }`,
+        }\n
+        **Action Item Target Channel**: ${
+          actionitemstargetchannel
+            ? `<#${actionitemstargetchannel.id}>`
+            : "None"
+        }
+        `,
         ephemeral: true,
       });
     } catch (error) {

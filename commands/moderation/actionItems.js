@@ -29,11 +29,11 @@ module.exports = {
       });
     }
 
-    const actionItemChannelId = serverSettings.actionItemsChannelId;
+    const actionItemsChannelId = serverSettings.actionItemsChannelId;
 
-    if (interaction.channelId !== actionItemChannelId) {
+    if (interaction.channelId !== actionItemsChannelId) {
       return interaction.reply({
-        content: `This command can only be used in the <#${actionItemChannelId}> channel.`,
+        content: `This command can only be used in the <#${actionItemsChannelId}> channel.`,
         ephemeral: true,
       });
     }
@@ -75,7 +75,7 @@ module.exports = {
       userTaskMap.get(user).push(task);
     }
 
-    // Generate initial task list message
+    // initial message content
     let messageContent = `📝 **Action Items:**\n\n`;
     userTaskMap.forEach((tasks, user) => {
       messageContent += `👤 **Assigned to:** ${user}\n`;
@@ -85,8 +85,7 @@ module.exports = {
       messageContent += "\n";
     });
 
-    // Fetch the specific channel to send the action items message
-    const targetChannelId = "1164670538006933505";
+    const targetChannelId = serverSettings.actionItemsTargetChannelId;
     const targetChannel = await interaction.guild.channels.fetch(
       targetChannelId
     );
@@ -97,14 +96,12 @@ module.exports = {
       });
     }
 
-    // Send the action items message to the specified channel
     const actionMessage = await targetChannel.send({
       content: messageContent + `✅ React with a checkmark to complete tasks!`,
     });
 
     await actionMessage.react("✅");
 
-    // Create reaction collector
     const filter = (reaction, user) => {
       return reaction.emoji.name === "✅" && userTaskMap.has(user);
     };
@@ -122,7 +119,6 @@ module.exports = {
         const nextTaskIndex = completedTasks.size;
         completedTasks.add(nextTaskIndex);
 
-        // Update message content
         let updatedMessageContent = `📝 **Action Items:**\n\n`;
         userTaskMap.forEach((userTasks, assignedUser) => {
           updatedMessageContent += `👤 **Assigned to:** ${assignedUser}\n`;
@@ -132,14 +128,12 @@ module.exports = {
           updatedMessageContent += "\n";
         });
 
-        // Edit the message to reflect the completion
         await actionMessage.edit({
           content:
             updatedMessageContent +
             `✅ React with a checkmark to complete tasks!`,
         });
 
-        // Notify the user about the completion
         await interaction.followUp({
           content: `${user} has completed task **${tasks[nextTaskIndex]}**!`,
           ephemeral: true,

@@ -8,6 +8,7 @@ const ServerSettingsSchema = new mongoose.Schema({
   generalChannelId: { type: String, required: false },
   emailDomains: { type: [String], required: false },
   actionItemsChannelId: { type: String, required: false },
+  actionItemsTargetChannelId: { type: String, required: false },
 });
 
 const ServerSettings = mongoose.model("ServerSettings", ServerSettingsSchema);
