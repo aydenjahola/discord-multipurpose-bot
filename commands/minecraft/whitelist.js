@@ -1,4 +1,4 @@
-const { SlashCommandBuilder } = require("discord.js");
+const { SlashCommandBuilder, PermissionsBitField } = require("discord.js");
 const { Rcon } = require("rcon-client");
 
 module.exports = {
@@ -14,21 +14,21 @@ module.exports = {
   isModOnly: true,
 
   async execute(interaction) {
+    // Check if the user has the Manage Server permission
+    if (
+      !interaction.member.permissions.has(PermissionsBitField.Flags.ManageGuild)
+    ) {
+      await interaction.reply({
+        content: "You do not have permission to use this command!",
+        ephemeral: false,
+      });
+      return;
+    }
+
     const username = interaction.options.getString("username");
     await interaction.deferReply();
 
     try {
-      // committee only for now, remove once opened to public
-      if (
-        !interaction.member.permissions.has(PermissionFlagsBits.ManageGuild)
-      ) {
-        await interaction.reply({
-          content: "You do not have permission to use this command!",
-          ephemeral: true,
-        });
-        return;
-      }
-
       const rcon = new Rcon({
         host: process.env.RCON_HOST,
         port: Number(process.env.RCON_PORT),
