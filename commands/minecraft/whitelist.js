@@ -14,17 +14,6 @@ module.exports = {
   isModOnly: true,
 
   async execute(interaction) {
-    // Check if the user has the Manage Server permission
-    if (
-      !interaction.member.permissions.has(PermissionsBitField.Flags.ManageGuild)
-    ) {
-      await interaction.reply({
-        content: "You do not have permission to use this command!",
-        ephemeral: false,
-      });
-      return;
-    }
-
     const username = interaction.options.getString("username");
     await interaction.deferReply();
 
